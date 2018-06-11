@@ -1,0 +1,1723 @@
+%\input /jaci/boss/farq/Misc/TeX/Macros/psfig.tex
+\input ./psfig.tex
+\pssilent
+%\raggedbottom
+\font\bigrm=cmr10 scaled \magstep1
+\font\bigbf=cmbx10 scaled \magstep1
+\font\bbigbf=cmbx10 scaled \magstep2
+\font\realsmallrm=cmr7
+\def\itemitemitem{\par\indent\indent \hangindent3\parindent \textindent}
+\def\itemitemitemitem{\par\indent\indent\indent \hangindent4\parindent \textindent}
+\def\sqr#1#2{{\vcenter{\vbox{\hrule height.#2pt
+                \hbox{\vrule width.#2pt height#1pt \kern#1pt \vrule width.#2pt} \hrule height.#2pt}}}}
+\def\square{\mathchoice\sqr34\sqr34\sqr{2.1}3\sqr{1.5}3}
+\def\date{\number\day\space \ifcase\month\or January\or February\or March\or April\or
+           May\or June\or July\or August\or September\or October\or November\or
+           December\fi \space\number\year}
+\headline={\ifnum\pageno=1 \hfil {\realsmallrm \date.}
+           \else {\realsmallrm Program EM1DTM.} \hfil {\realsmallrm \date.} \fi}
+\fontdimen16\tensy=2.7pt
+\fontdimen17\tensy=2.7pt
+\def\boxit#1{\vbox{\hrule\hbox{\vrule\kern7pt
+      \vbox{\kern7pt#1\kern7pt}\kern7pt\vrule}\hrule}}
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\centerline{\underbar{\bbigbf PROGRAM ``EM1DTM''}}
+
+\bigskip\bigskip\bigskip
+\leftline{\bigrm Version 1.0$\,$a,~~\date.}
+
+%--------
+
+\bigskip\bigskip\bigskip
+\leftline{\bigbf Contents}
+\nobreak\bigskip\vbox{\narrower\noindent
+\item{FS.} Input \& Output Files
+\itemitem{FS.1} Input files\quad\dotfill\quad ?
+\itemitemitem{FS.1.1} Main input file\quad\dotfill\quad ?
+\itemitemitem{FS.1.2} Observations file\quad\dotfill\quad ?
+\itemitemitem{FS.1.3} Starting model or layer thicknesses file\quad\dotfill\quad ?
+\itemitemitem{FS.1.4} File for reference conductivity model (for smallest model
+component)\quad\dotfill\quad ?
+\itemitemitem{FS.1.5} File for reference conductivity model (for flattest model
+component)\quad\dotfill\quad ?
+\itemitemitem{FS.1.6} File for additional model-norm weights\quad\dotfill\quad ?
+}
+
+\vfill\break
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\bigskip\bigskip
+\leftline{\bigbf FS.~Input \& Output Files}
+\nobreak\bigskip
+\leftline{\bf FS.1~Input files}
+\nobreak\medskip
+\leftline{{\bf FS.1.1~Main input file} (Required, and called ``{\tt em1dtm.in}'')}
+\nobreak\smallskip\noindent
+This is the main input file containing the parameters specifying the names of the file containing
+the observations and the files containing the starting and reference models, the type of the
+inversion algorithm, and the various parameters for the inversion and for the forward modelling.
+
+\medskip\noindent
+The structure of the file ``{\tt em1dtm.in}'' is:
+\par\medskip\settabs 20\columns
+\+&{\sl rootname}&&&&&$\leftarrow$ line 1: root for names of output files;\cr
+\+&{\sl obsfname}&&&&&$\leftarrow$ line 2: name of file containing the observations;\cr
+\+&{\sl stconfname}&&&&&$\leftarrow$ line 3: starting conductivity model file, or layer thicknesses
+file;\cr
+\+&{\sl rsconfname}&&&&&$\leftarrow$ line 4: reference (smallest) conductivity model file;\cr
+\+&{\sl rzconfname}&&&&&$\leftarrow$ line 5: reference (flattest) conductivity model file;\cr
+\+&{\tt NONE}&&&&&$\leftarrow$ line 6: information about additional model weights;\cr
+\+&{\sl hc}~{\sl eps}~{\sl ees}~{\sl epz}~{\sl eez}&&&&&$\leftarrow$ line 7: parameters for Huber \& Ekblom measures;\cr
+\+&{\sl acs}~{\sl acz}&&&&&$\leftarrow$ line 8: coefficients of model norm components;\cr
+\+&{\sl iatype}&&&&&$\leftarrow$ line 9: type of inversion algorithm;\cr
+\+&{\sl iapara(s)}&&&&&$\leftarrow$ line 10: additional inversion algorithm parameter(s);\cr
+\+&{\sl maxniters}&&&&&$\leftarrow$ line 11: maximum number of iterations in an inversion;\cr
+\+&{\tt DEFAULT}&&&&&$\leftarrow$ line 12: small number for convergence tests;\cr
+\+&{\tt DEFAULT}&&&&&$\leftarrow$ line 13: number of explicit evaluations of Hankel transform
+kernels;\cr
+\+&{\tt DEFAULT}&&&&&$\leftarrow$ line 14: information for explicit evaluations of Fourier transform
+kernels;\cr
+\+&{\sl outflag}&&&&&$\leftarrow$ line 15: flag indicating amount of output.\cr
+
+\medskip\noindent
+where, on $\ldots$
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+line 1, {\sl rootname\/} is the root for the names of all output files (character string of length
+less than or equal to 20 characters);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 2, {\sl obsfname\/} is the name of the file containing the observations (see section~FS.1.2)
+(character string of length less that or equal to 99 characters);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 3, {\sl stconfname\/} is the name of the file containing the starting conductivity model, or
+the name of the file containing the layer thicknesses if best-fitting halfspaces are to be used
+as the starting models (see section~FS.1.3 for the format of this file), required (character
+string of length less than or equal to 99 characters);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 4, {\sl rsconfname\/} is the name of the file containing the reference conductivity model
+for the smallest component of the model norm (see section~FS.1.5), required if {\sl asc}$\>>0$
+(if {\sl asc}$\>=0$, ``{\tt NONE}'' can be entered on this line) (character string of length less
+than or equal to 99 characters), or ``{\tt DEFAULT}'' if the best-fitting homogeneous halfspace
+is to be used, or the conductivity of thte homogeneous halfspace to use;
+
+\hangindent=\parindent\hangafter=1\noindent
+line 5, {\sl rzconfname\/} is the name of the file containing the reference conductivity model for
+the flattest component of the model norm (see section~FS.1.5), completely optional~-- if such a model
+is supplied in a file whose name is given here then it will be used in the inversion, otherwise,
+if ``{\tt NONE}'' is given on this line of the input file, there will be no reference conductivity
+model in the flattest component of the model norm (character string of length less than or equal to
+99 characters if a file name is being given, or the string ``{\tt NONE}'' if no reference model is
+being supplied), or ``{\tt DEFAULT}'' if the best-fitting homogeneous halfspace is to be used, or
+the value of the halfspace to be used;
+
+\hangindent=\parindent\hangafter=1\noindent
+line 6, either ``{\tt NONE}'' is specified to indicate that no additional user-supplied weights
+are to be provided for use in the model norm, or the name of the file containing the additional
+weighting (see section~FS.1.9 for the format of this file) (character string of length less
+than or equal to 99 characters);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 7, the parameters {\sl hc\/}, {\sl eps\/}, {\sl ees\/}, {\sl epz\/} and {\sl eez\/},
+where {\sl hc\/} is the parameter~$c$ in the Huber measure for the misfit:
+$$
+\rho(x_j)\>=\>\cases{x_j^2&$|x_j|\le c$,\cr
+2c|x_j|-c^2&$|x_j|> c,$\cr}
+$$
+and {\sl eps\/} and {\sl ees\/} are the parameters $p$ and $\varepsilon$ in Ekblom's measure
+for the smallest component of the model norm:
+$$
+\rho(x_j)\;=\;\big(x_j^2+\varepsilon^2\big)^{p/2},
+$$
+and {\sl epz\/} and {\sl eez\/} are the parameters $p$ and $\varepsilon$ in Ekblom's measure
+for the flattest component of the model norm;
+
+\hangindent=\parindent\hangafter=1\noindent
+line 8, the two parameters {\sl acs\/} and {\sl acz\/}, where the value of {\sl acs\/} is
+$\alpha_s$ in the expression for the model norm below, and the value of {\sl acz\/} is $\alpha_z$:
+%$$
+%\phi_m\;=\;\alpha_s\|W_s(m-m_s^{\rm ref})\|^2+\alpha_z\|W_z(m-m_z^{\rm ref})\|^2
+%$$
+$$
+\phi_m\;=\;\alpha_s\>\phi_s\big(W_s(m-m_s^{\rm ref})\big)+
+\alpha_z\>\phi_z\big(W_z(m-m_z^{\rm ref})\big)
+$$
+(the two parameters that are read in are real numbers greater than or equal to zero);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 9, {\sl iatype\/} indicates the type of inversion algorithm to be used, {\sl iatype\/}$\>=1$
+implies a fixed, user-supplied value for the trade-off parameter, {\sl iatype\/}$\>=2$ implies
+that the trade-off parameter will be chosen by means of a line search so that a target misfit is
+achieved (or, if this is not possible, then the smallest misfit), {\sl iatype\/}$\>=3$ implies
+the trade-off parameter will be chosen using the GCV criterion, and {\sl iatype\/}$\>=4$ implies
+that the trade-off parameter will be chosen using the L-curve criterion;
+
+\hangindent=\parindent\hangafter=1\noindent
+line 10, if {\sl iatype\/}$\>=1$, the value of the trade-off parameter is expected (and
+optionally the starting value of the trade-off parameter, and the factor by which the
+trade-off parameter is to be decreased at each iteration, down to the specified value), or if
+{\sl iatype\/}$\>=2$, the target misfit (in terms of the factor {\sl chifac\/} where the target
+misfit is {\sl chifac\/} times the total number of observations for the sounding) and the greatest
+allowed decrease in the misfit (in terms of {\sl decr\/} where
+$\phi_d^{n+1,{\rm tar}}={\rm max}({\sl chifac\/}\times N,{\sl decr}\times\phi_d^n)$) at any one
+iteration (and optionally the starting value of the trade-off parameter) are expected , or if
+{\sl iatype\/}$\>=$3 or 4, the greatest allowed decrease in the trade-off parameter at any one
+iteration (in terms of {\sl decr\/} where ${\rm min}(\beta^{n+1})={\sl decr}\times\beta^n$)
+(and optionally the starting value of the trade-off parameter);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 11, {\sl maxniters\/} is the maximum number of iterations to be carried out in an
+inversion (a strictly positive integer);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 12, either ``{\tt DEFAULT}'' can be entered to indicate that the default value of $10^{-4}$ is
+to be used in the tests of convergence for an inversion, or, if another value is desired, it can
+be entered on this line (a strictly positive real number);
+
+\hangindent=\parindent\hangafter=1\noindent
+line 13, either ``{\tt DEFAULT}'' can be entered to indicate the kernel of the Hankel transforms
+is to be explicitly evaluated the default number of times ($=$50), or, if there are concerns about
+the accuracy of the Hankel transform computations, a number greater than 50 can be entered on this
+line;
+
+\hangindent=\parindent\hangafter=1\noindent
+line 14, either ``{\tt DEFAULT}'' to indicate the kernel of the Fourier transforms is to be
+explicitly evaluated at the default number of frequencies ($=$50), or, if there are concerns about
+the accuracy of the Fourier transform computations, a number greater than 50 can be entered on this
+line, or the number of frequencies and the minimum and maximum frequencies can be supplied;
+
+\hangindent=\parindent\hangafter=1\noindent
+line 15, {\sl outflg\/} is the flag indicating the amount of output from the program
+({\sl outflg\/}$\>=1$ implies the output of a brief convergence/termination report for each
+sounding plus the final two-dimensional composite model for all the soundings and the corresponding
+forward-modelled data, {\sl outflg\/}$\>=2$ implies the aforementioned output plus the final
+one-dimensional model and corresponding forward-modelled data for each sounding,
+{\sl outflg\/}$\>=3$ implies the aforementioned output plus the values of the various components
+of the objective function at each iteration in the inversion for each sounding, and
+{\sl outflg\/}$\>=4$ implies the aforementioned output plus an additional diagnostics file for
+each sounding which records the progress of the inversion for the sounding, a record of misfit,
+GCV function or L-curve curvature versus trade-off parameter, and a diagnostics file for the
+LSQR solution routine if it is used).
+
+%--------
+
+\bigskip
+\leftline{{\bf FS.1.2~Observations file} (Required)}
+\nobreak\smallskip\noindent
+The file that contains the observations and all the survey parameters (except for any
+user-supplied transmitter current waveform):
+\item{--} the number of soundings;
+\item{--} the (absolute) $x$- and $y$-coordinates and elevation of each sounding (and any other
+information that is to pass throught EM1DTM to the output files, such as a fiducial and/or line
+number);
+\item{--} the number of segments in each transmitter loop, the (relative) $x$- \& $y$-coordinates
+of the start of each segment, the $z$-coordinate of the plane of the transmitter loop;
+\item{--} the name of the file containing the transmitter current waveform information (flag
+indicating what the transmitter current waveform is, and relevant parameters such as current
+as a function of time);
+\item{--} the number of receivers, and units for all times;
+\item{--} the dipole moment of each receiver, the (relative) $x$-, $y$- \& (abssolute) $z$-coordinates,
+and the orientation of the receiver, the number of measurement times, flag for units of time,
+flag for units/normalization of data;
+\item{--} time, sweep index, datum, flag for type of uncertainty, uncertainty.
+
+\medskip\noindent
+The structure of the observations file is:
+\par\medskip\settabs 20\columns
+\+&{\sl nsounds}&&&&&&&&&&&&&&&&$\leftarrow$ line A;\cr
+\+&{\sl soundx$\_$a}($i_s$)\quad {\sl soundy$\_$a}($i_s$)\quad
+{\sl soundz$\_$a}($i_s$)&&&&&&&&&&&&&&&&$\leftarrow$ line B;\cr
+
+\+&{\sl ntsegs$\_$a}($i_s$)\quad ( {\sl xt$\_$a}($j,i_s$), {\sl yt$\_$a}($j,i_s$),
+$j=1, \ldots$, {\sl ntsegs$\_$a}($i_s$) )\quad {\sl zt$\_$a}($i_s$)&&&&&&&&&&&&&&&&$\leftarrow$ line C;\cr
+
+\+&{\sl tcwfn$\_$a}($i_s$)&&&&&&&&&&&&&&&&$\leftarrow$ line D;\cr
+
+\+&{\sl nr$\_$a}($i_s$)\quad {\sl tu$\_$a}($i_s$)&&&&&&&&&&&&&&&&$\leftarrow$ line E;\cr
+
+\+&{\sl momr$\_$a}($i_r$,$i_s$)\quad {\sl xr$\_$a}($i_r$,$i_s$)\quad {\sl yr$\_$a}($i_r$,$i_s$) \quad
+{\sl zr$\_$a}($i_r$,$i_s$)\quad {\sl or$\_$a}($i_r$,$i_s$)\quad {\sl nt$\_$a}($i_r$,$i_s$)
+\quad$\ldots$\cr
+\+&\quad$\ldots$\quad {\sl ontype$\_$a}($i_r$,$i_s$)
+&&&&&&&&&&&&&&&&$\leftarrow$ line F;\cr 
+\medskip
+\+&\quad {\sl t$\_$a}($i_t$,$i_r$,$i_s$)\quad {\sl tf$\_$a}($i_t$,$i_r$,$i_s$)\quad
+{\sl obs$\_$a}($i_t$,$i_r$,$i_s$)\quad {\sl utype$\_$a}($i_t$,$i_r$,$i_s$)\quad
+{\sl uncert$\_$a}($i_t$,$i_r$,$i_s$)&&&&&&&&&&&&&&&&$\leftarrow$ line Ga,\cr 
+\+&\quad\quad OR \cr
+\+&\quad {\sl t1$\_$a}($i_t$,$i_r$,$i_s$)\quad {\sl t2$\_$a}($i_t$,$i_r$,$i_s$)\quad
+{\sl tf$\_$a}($i_t$,$i_r$,$i_s$)\quad {\sl obs$\_$a}($i_t$,$i_r$,$i_s$)\quad
+{\sl utype$\_$a}($i_t$,$i_r$,$i_s$)\quad$\ldots$\cr
+\+&\quad\quad$\ldots$\quad {\sl uncert$\_$a}($i_t$,$i_r$,$i_s$)&&&&&&&&&&&&&&&&$\leftarrow$
+line Gb.\cr 
+
+\medskip\noindent
+where:
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl nsounds} is the number of soundings;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl soundx$\_$a}($i_s$) is the $x$-coordinate (m) of the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl soundy$\_$a}($i_s$) is the $y$-coordinate (m) of the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl soundz$\_$a}($i_s$) is the elevation (m) above sea level (or some other datum) of the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl ntsegs$\_$a}($i_s$) is the number of linear segments in the transmitter loop for
+the $i_s$th sounding (i.e., one transmitter per sounding, but can be different for
+different soundings);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl xt$\_$a}($j,i_s$) the (relative) $x$-coordinate (m) of the start of the $j$th
+segment of the $i_s$th transmitter loop (the end of the $j$th segment is assumed
+to be joined to the start of the $(j+1)$-th segment, with the end of the {\sl ntsegs}-th
+segment joined to the start of the first segment);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl yt$\_$a}($j,i_s$) the (relative) $y$-coordinate (m) of the start of the $j$th
+segment of the transmitter loop for the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl zt$\_$a}($i_s$) the $z$-coordinate (m) of the plane (which is assumed to be horizontal)
+of the transmitter loop for the $i_s$th sounding (with $z$ positive downwards, $z=0$ being
+at the Earth's surface, and {\sl zt$\_$a}$\le0$ for all soundings);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl tcwfn$\_$a}($i_s$) the name of the file with the transmitter current waveform
+information (either the code and required parameters for specific waveforms, or the
+current as a function of time) for the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl nr$\_$a}($i_s$) the number of receivers for the $i_s$th sounding, with each different
+component being considered to be from a distinct receiver;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl tu$\_$a}($i_s$) a flag to indicate the units of the measurement times for the
+$i_s$th sounding ($=1$ implies microseconds, $=2$ means milliseconds, $=3$ implies seconds);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl momr$\_$a}($i_r$,$i_s$) the dipole moment (${\rm A\,m^2}$) of the $i_r$th receiver for
+the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl xr$\_$a}($i_r$,$i_s$) the (relative) $x$-coordinate (m) of the $i_r$th receiver for the
+$i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl yr$\_$a}($i_r$,$i_s$) the (relative) $y$-coordinate (m) of the $i_r$th receiver for the
+$i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl zr$\_$a}($i_r$,$i_s$) the (absolute) $z$-coordinate (m) of the $i_r$th receiver for the
+$i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl or$\_$a}($i_r$,$i_s$) the orientation ($x$, $y$, or $z$) of the $i_r$th receiver for
+the $i_s$th sounding (and something else if extra data types such as a total field amplitude
+are to be considered);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl nt$\_$a}($i_r$,$i_s$) the number of measurement times for the $i_r$th receiver for the
+$i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl ontype$\_$a}($i_r$,$i_s$) some sort of info about normalisation/scaling/units of the
+observations (for the $i_t$) for the $i_r$ receiver for the $i_s$ sounding ($=1$ implies
+voltages in microVolts, $=2$ implies voltages in milliVolts, $=3$ means voltages in Volts,
+$=4$ implies B-field in nano-Tesla, $=5$ implies B-field in micro-Tesla, $=6$ implies B-field
+in milli-Tesla);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl t$\_$a}($i_t$,$i_r$,$i_s$) the $i_t$th measurement time (in the units indicated by
+{\sl tu$\_$a}($i_r$,$i_s$)) for the $i_r$th receiver for the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl t1$\_$a}($i_t$,$i_r$,$i_s$) the start time for the window for the $i_t$th measurement (in
+the units indicated by {\sl tu$\_$a}($i_r$,$i_s$)) for the $i_r$th receiver for the
+$i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl t2$\_$a}($i_t$,$i_r$,$i_s$) the end time for the window for the $i_t$th measurement (in
+the units indicated by {\sl tu$\_$a}($i_r$,$i_s$)) for the $i_r$th receiver for the
+$i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl tf$\_$a}($i_t$,$i_r$,$i_s$) some extra info such as to which sweep the $i_t$th time for
+the $i_r$th receiver for the $i_s$th sounding belongs;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl obs$\_$a}($i_t$,$i_r$,$i_s$) the observed data at the $i_t$th measurement time for the
+$i_r$th receiver for the $i_s$th sounding in the units specified by {\sl ontype$\_$a}($i_r$,$i_s$);
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl utype$\_$a}($i_t$,$i_r$,$i_s$) the form of the uncertainty (relative in~\% or absolute in
+the same units as the observations) in the $i_t$th observation for the $i_r$th receiver for
+the $i_s$th sounding;
+
+\medskip
+\hangindent=\parindent\hangafter=1\noindent
+{\sl uncert$\_$a}($i_t$,$i_r$,$i_s$) the uncertainty in the $i_t$th observation for the $i_r$th
+receiver for the $i_s$th sounding.
+
+\medskip\noindent
+This structure of the observations file is designed to be as general as possible, enabling
+the program to handle any conceivable survey configuration.
+The lines in the file form a series of nested loops.
+Repetition occurs over the indices: $i_t=1,\ldots,\>${\sl nt\_a}($i_r$,$i_s$);
+$i_r=1,\ldots,\>${\sl nr\_a}($i_s$); and $i_s=1,\ldots,\>${\sl nsounds}.
+In other words, line~G is repeated for each time for each receiver for each particular sounding;
+line~F and the associated line(s)~G are repeated for each receiver for each sounding; lines~B,
+C, D \& E, and the associated line(s)~F and line(s)~G are repeated for each sounding.
+All the information for a particular measurement time is expected on the same single line in
+the file.
+
+\medskip\noindent
+For example:
+
+%--------
+
+\bigskip\bigskip
+\leftline{{\bf FS.1.3~Starting conductivity model file} (Required)}
+\nobreak\smallskip\noindent
+The file containing the starting conductivity model for all soundings, or, if (crude) best-fitting
+halfspace(s) are to be used as the starting model(s), then this is the file containing the number
+of layers and the layer thicknesses.
+If this file is the starting model, the relevant quantities are the number of layers, and the
+thickness~(m) and conductivity~(${\rm S/m}$) of each layer.
+A~dummy value for the thickness of the basement halfspace is required in this file,
+but nothing is ever done with it after it is read in.
+It is from this file that the program gets the number of layers and their thicknesses,
+which then must be the same for all other models read in by the program.
+This file is therefore required.
+The structure of this  file is as follows (just as for all 1d model files):
+\par\medskip\settabs 20\columns
+\+&&&&{\sl nlayers}\cr
+\+&&&&{\sl thicks$\_$a}(1)&&&{\sl con$\_$a}(1)\cr
+\+&&&&{\sl thicks$\_$a}(2)&&&{\sl con$\_$a}(2)\cr
+\+&&&&&$\vdots$\cr
+\+&&&&{\sl thicks$\_$a}({\sl nlayers}$-1$)&&&&{\sl con$\_$a}({\sl nlayers}$-1$)\cr
+\+&&&&&{\tt 0.}&&{\sl con$\_$a}({\sl nlayers})\cr
+\par\medskip\noindent
+where {\sl nlayers} is the number of layers in the model, {\sl thicks$\_$a}($j$) is the
+thickness in metres of the $j$th layer and {\sl con$\_$a}($j$) is the conductivity
+in ${\rm S/m}$ of the $j$th layer, or:
+\par\medskip\settabs 20\columns
+\+&&&&{\sl nlayers}\cr
+\+&&&&{\sl thicks$\_$a}(1)\cr
+\+&&&&{\sl thicks$\_$a}(2)\cr
+\+&&&&&$\vdots$\cr
+\+&&&&{\sl thicks$\_$a}({\sl nlayers}$-1$)\cr
+\+&&&&&{\tt 0.}\cr
+\par\medskip\noindent
+if best-fitting halfspace(s) are to be used as the starting model(s).
+
+%--------
+
+\bigskip\bigskip
+\leftline{{\bf FS.1.4~File for reference conductivity model (for smallest model component)}
+(Optional)}
+\nobreak\smallskip\noindent
+The file containing the reference conductivity model for the smallest component of
+the model norm if one is required for the inversion.
+This file is in the same format as the starting conductivity model file (see section~FS.1.3),
+and must have the same number of layers with exactly the same thicknesses as the starting
+model.
+
+%--------
+
+\bigskip\bigskip
+\leftline{{\bf FS.1.5~File for reference conductivity model (for flattest model component)}
+(Optional)}
+\nobreak\smallskip\noindent
+The file containing the reference conductivity model for the flattest component of
+the model norm if one is required for the inversion.
+Whether or not this file is specified in ``{\tt em1dtm.in}'' determines whether or not such
+a reference model plays a part in the inversion.
+This file is in the same format as the starting conductivity model file (see section~FS.1.3),
+and must have the same number of layers with exactly the same thicknesses as the starting
+model.
+
+%--------
+
+\bigskip\bigskip
+\leftline{{\bf FS.1.6~File for additional model-norm weights} (Optional)}
+\nobreak\smallskip\noindent
+The file containing any additional weighting of the layers for one or both of the two
+components of the model norm.
+The first line of this file must contain the number of layers in the model.
+The order of the two possibilities must be the same as shown below, with any set of weights that
+is not needed by the program simply omitted.
+\par\medskip\settabs 20\columns
+\+&&&&{\sl nlayers}\cr
+\+&&&&({\sl uswcs$\_$a}($j$),\quad$j=1,\ldots,\,${\sl nlayers\/})\cr
+\+&&&&({\sl uswcz$\_$a}($j$),\quad$j=1,\ldots,\,${\sl nlayers}$-1$)\cr
+\par\medskip\noindent
+where {\sl nlayers} is the number of layers in the model, {\sl uswcs$\_$a}($j$) is the weight
+for the $j$th layer in the smallest component of the model norm, and
+{\sl uswcz$\_$a}($j$) is the weight for the difference between the $j$th and ($j\!+\!1$)th layers
+in the flattest component of the model norm.
+The supplied weights must be greater than zero.
+A~weight greater than one increases the weight relative to the default setting, and
+a weight less than one decreases the weight relative to the default setting.
+
+%--------
+
+\bigskip\bigskip
+\leftline{{\bf FS.1.7~Transmitter current waveform for each/all transmitters} (Required)}
+\nobreak\smallskip\noindent
+The file containing the particulars of the transmitter current waveform for each
+sounding.
+There can be one file for each sounding (one transmitter per ``sounding''), or one
+file for all soundings if they all have the same particulars, or any mix 'n match.
+The first line of a transmitter current waveform file conatins either the code for
+a special waveform (followed by the necessary parameters), or the number of times
+in a discretized, user-supplied waveform.
+If it's a discretized waveform, the subsequent lines in the file contain the times
+(in the same units as the measurement times for the sounding: see {\sl tu$\_$a}) and
+values of current (in Amp\`eres) at the discrete points at which the waveform is
+supplied.
+
+\medskip\noindent
+If the special waveform is a {\it step}, the code on the first line of the file is ``ste''
+(or ``STE'').
+If the effects of previous negative \& positive step-offs are to be taken into account,
+then the number of previous step-offs to take into account and the time (in the same
+units as for the observation times: see {\sl tu$\_$a}) are expected on this line.
+(If one previous step-off is asked for, it's the negative one (i.e., of opposite sense
+to the main, first one) at the specified time before.
+If two previous step-offs are asked for, it's the negative one at the specified time
+before, and the positive one at twice the specified time. Etc.)
+
+\medskip\noindent
+If the special waveform is a {\it linear ramp turn-off}, the code on the first line of the
+file is ``ram'' (or ``RAM'').
+Also on this first line of the file, the number of different ramp turn-off times
+(between 1 \& 6 inclusive), and the values of the ramp turn-off times (in the
+same units as for the observations times: see {\sl tu$\_$a}) are expected.
+For this waveform, all observations times are measured from the end of the ramp.
+
+%--------
+
+\bigskip\bigskip
+\leftline{{\bf FS.1.8~File for frequency-domain filter} (Optional)}
+\nobreak\smallskip\noindent
+The file containing the frequency-domain filter, if one is to be applied.
+This file has to be called ``{\tt freqfilter}''.
+If it exists, it will be read in: if not, then no frequency-domain filter
+will be applied.
+The first line contains the number of points in the filter (which must be
+greater than 4).
+The other lines in this file each contain the frequency in Hertz, and the
+real and imaginary values of the filter function at each point that it
+is specified.
+\par\medskip\settabs 20\columns
+\+&&&&{\sl nfltrpts}\cr
+\+&&&&{\sl freq$\_$a}(1)&&&{\sl rfltr$\_$a}(1)&&&{\sl ifltr$\_$a}(1)\cr
+\+&&&&{\sl freq$\_$a}(2)&&&{\sl rfltr$\_$a}(2)&&&{\sl ifltr$\_$a}(2)\cr
+\+&&&&&$\vdots$&&&$\vdots$&&&$\vdots$\cr
+\+&&&&{\sl freq$\_$a}({\sl nfltrpts})&&&{\sl rfltr$\_$a}({\sl nfltrpts})&&&{\sl ifltr$\_$a}({\sl nfltrpts})\cr
+\par\medskip\noindent
+
+%--------
+
+
+\vfill\break
+
+%\bye
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\centerline{\underbar{\bigbf Appendices}}
+
+\bigskip\bigskip
+\leftline{\bigbf A.~Mathematics for Forward-Modelling Computations}
+\nobreak\bigskip\noindent
+This appendix covers the aspects of the forward-modelling procedure for the three components
+of the magnetic field above a horizontally-layered Earth model for a horizontal, many-sided
+transmitter loop also above the surface of the model that are not covered in Appendix~A
+of the notes for program {\tt EM1DFM}.
+The field for the transmitter loop is computed by the superposition of the fields due to
+horizontal electric dipoles (see eqs.~4.134--4.152 of Ward~\& Hohmann).
+Because the loop is closed, the contributions from the ends of the electric dipole are
+ignored, and the superposition is carried out only over the ``TE''-mode component.
+This TE-mode only involves the $z$-component of the Schelkunoff ${\bf F}$~potential, just
+as for program {\tt EM1DFM}.
+The propagation of $F$ through the stack of layers therefore happens in exactly the same
+way, and so is not repeated here (see eqs.~A--1 to A--36 of Appendix~A for {\tt EM1DFM}).
+
+\bigskip\noindent
+{\bf Assumptions}: $e^{i\omega t}$ time-dependence (just as in W~\& H); quasi-static
+approximation throughout; $z$ positive downwards; air halfspace ($\sigma=0$) for $z<0$,
+piecewise constant model ($\sigma>0$) of $N$ layers for $z\ge0$, $N$th layer being the
+basement (i.e.~homogeneous) halfspace; magnetic permeability everywhere equal to that
+of free space.
+
+\bigskip\noindent
+From the propagation of $F$ through the layers gives the following expression for the
+kernel of the Hankel transform, $\tilde{F}$, in the air halfspace ($z<0$):
+$$
+\tilde{F}_0\;=D_0^S\Big(e^{-u_0z}\;+\;{P_{21}\over P_{11}}e^{u_0z}\Big)
+\eqno{\hbox{(A--1)}}
+$$
+(eq.~A--36 from Appendix~A for {\tt EM1DFM}).
+
+\bigskip\noindent
+For a horizontal $x$-directed electric dipole at a height $h$ (i.e., $z=-h$, $h>0$) above
+the surface of the layered Earth, the downward-decaying part of the primary solution of
+$\tilde{F}$ (and the only downward-decaying part of the solution in the air halfspace)
+at the surface of the Earth ($z=0$) is given by
+$$
+D_0^S\;=\;-\,{i\omega\mu_0\over 2u_0}\>{ik_y\over k_x^2+k_y^2}\>e^{-u_0h}
+\eqno{\hbox{(A--2)}}
+$$
+(Ward~\& Hohmann, eq.~4.137).
+Substituting this into eq.~(A--1) gives
+$$
+\tilde{F}_0\;=-\,{i\omega\mu_0\over 2u_0}\>{ik_y\over k_x^2+k_y^2}\>
+\Big(e^{-u_0(z+h)}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big).
+\eqno{\hbox{(A--3)}}
+$$
+Generalizing this expression for $z$ above ($z<-h$) as well as below the source ($z>-h$):
+$$
+\tilde{F}_0\;=-\,{i\omega\mu_0\over 2u_0}\>{ik_y\over k_x^2+k_y^2}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big).
+\eqno{\hbox{(A--4)}}
+$$
+
+\bigskip\noindent
+Applying the inverse Fourier transform (see eq.~A--4 in Appendix~A for {\tt EM1DFM}) to
+eq.~(A--4) gives
+$$
+F_0(x,y,z,\omega)\;=\;-\,{1\over4\pi^2}\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over 2u_0}\>{ik_y\over k_x^2+k_y^2}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)\,
+e^{i(k_xx+k_yy)}\;dk_x\,dk_y
+\eqno{\hbox{(A--5)}}
+$$
+(cf.~eq.~4.139 of Ward~\& Hohmann).
+Using the identity
+$$
+\int_{\infty}^{\infty}\int_{\infty}^{\infty}\tilde{F}(k_x^2+k_y^2)\,dk_x\,dk_y\;=\;
+2\pi\int_0^{\infty}\tilde{F}(\lambda)\,\lambda\,J_0(\lambda r)\,d\lambda,
+\eqno{\hbox{(A--6)}}
+$$
+(Ward~\& Hohmann, eq.2.10) where $\lambda^2=k_x^2+k_y^2$ and $r^2=x^2+y^2$, eq.~(A--5)
+can be rewritten as
+$$\eqalignno{
+F_0(x,y,z,\omega)\;&=\;-\,{1\over2\pi}\,{\partial\over\partial y}\,\int_0^{\infty}
+{i\omega\mu_0\over 2u_0}\>{1\over\lambda^2}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)\,
+\lambda\,J_0(\lambda r)\,d\lambda,&\hbox{(A--7)}\cr
+&=\;-\,{i\omega\mu_0\over4\pi}\,{\partial\over\partial y}\,\int_0^{\infty}
+\,\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+{1\over\lambda^2}\,J_0(\lambda r)\,d\lambda,&\hbox{(A--8)}\cr
+&=\;{i\omega\mu_0\over4\pi}\,{y\over r}\,\int_0^{\infty}
+\,\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+{1\over\lambda}\,J_1(\lambda r)\,d\lambda,&\hbox{(A--9)}\cr
+}$$
+since
+$$
+{\partial J_0(\lambda r)\over\partial y}\;=\;-\,\lambda{y\over r}\,J_1(\lambda r)
+\eqno{\hbox{(A--10)}}
+$$
+(Ward~\& Hohmann, eq.~4.44 (almost)).
+
+\bigskip\noindent
+The $H$-field in the air halfspace can be obtained from eq.~(A--9) (or eq.~A--8)
+by using eq.~(1.130) of Ward~\& Hohmann:
+$$\eqalignno{
+H_x\;&=\;{1\over i\omega\mu_0}\,{\partial^2F_0\over\partial x\partial z},&\hbox{(A--11)}\cr
+H_y\;&=\;{1\over i\omega\mu_0}\,{\partial^2F_0\over\partial y\partial z},&\hbox{(A--12)}\cr
+H_z\;&=\;{1\over i\omega\mu_0}\,\Big({\partial^2\over\partial z^2}\,+\,\kappa_0^2\Big)
+\,F_0&\hbox{(A--13)}\cr
+&=\;{1\over i\omega\mu_0}\,{\partial^2F_0\over\partial z^2}.&\hbox{(A--14)}\cr
+}$$
+since $\kappa_0^2=0$.
+Applying eq.~(A--11) to eq.~(A--9) gives
+$$\eqalignno{
+H_x(x,y,z,\omega)\;&=\;{1\over4\pi}\,{\partial\over\partial x}\,{y\over r}\,\int_0^{\infty}
+\,\Big(\pm e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+J_1(\lambda r)\,d\lambda.&\hbox{(A--15)}\cr
+}$$
+(The plus/minus is to do with whether or not the observation location is above or
+below the source. In the program, {\it perhaps} it is only the secondary fields that
+are computed using the above expressions: the primary field, which corresponds to
+the first term in each Hankel transform kernel above is computed using its for
+in $(x,y,z)$-space.)
+When the above expression for a horizontal electric dipole is integrated along a wire
+all that is left is the effects of the endpoints.
+These will cancel when integrating around the closed loop.
+So as far as the part of $H_x$ that contributes to the file due to a closed loop:
+$$
+H_x(x,y,z,\omega)\;=\;0.
+\eqno{\hbox{(A--16)}}
+$$
+
+\bigskip\noindent
+For the $y$-component of the H-field, first consider differentiating the expression for
+$F_0$ in eq.~(A--5) with respect to $y$:
+$$\eqalignno{
+{\partial F_0\over\partial y}\;&=\;-\,{1\over4\pi^2}\,{\partial\over\partial y}\,
+\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over 2u_0}\>{ik_y\over k_x^2+k_y^2}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)\,
+e^{i(k_xx+k_yy)}\;dk_x\,dk_y,&{\hbox{(A--17)}}\cr
+&=\;{1\over4\pi^2}\,\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over 2u_0}\>{k_y^2\over k_x^2+k_y^2}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)\,
+e^{i(k_xx+k_yy)}\;dk_x\,dk_y,&{\hbox{(A--18)}}\cr
+&=\;{1\over4\pi^2}\,\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over 2u_0}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)\,
+e^{i(k_xx+k_yy)}\;dk_x\,dk_y\cr
+&\qquad-\;{1\over4\pi^2}\,\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over 2u_0}\>{k_x^2\over k_x^2+k_y^2}\>
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)\,
+e^{i(k_xx+k_yy)}\;dk_x\,dk_y,&{\hbox{(A--19)}}\cr
+}$$
+since
+$$
+{k_y^2\over k_x^2+k_y^2}\;=\;1\>-\>{k_x^2\over k_x^2+k_y^2}.
+\eqno{\hbox{(A--20)}}
+$$
+Converting the $k_x^2$ into derivatives with respect to $x$, and converting the
+two-dimensional Fourier transforms to Hankel transforms gives
+$$\eqalignno{
+{\partial F_0\over\partial y}\;&=\;{i\omega\mu_0\over4\pi}\,\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+J_0(\lambda r)\;d\lambda\cr
+&\qquad\qquad+\;{i\omega\mu_0\over4\pi}\,{\partial^2\over\partial x^2}\,\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+{1\over\lambda^2}\>J_0(\lambda r)\;d\lambda,&{\hbox{(A--21)}}\cr
+&=\;{i\omega\mu_0\over4\pi}\,\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+J_0(\lambda r)\;d\lambda\cr
+&\qquad\qquad-\;{i\omega\mu_0\over4\pi}\,{\partial\over\partial x}\,{x\over r}\,\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+{1\over\lambda}\>J_1(\lambda r)\;d\lambda,&{\hbox{(A--22)}}\cr
+}$$
+using eq.~(4.144) \& (4.117) of Ward~\& Hohmann.
+Differentiating eq.~(A-22) with respect to $z$ and scaling by $i\omega\mu_0$ (see eq.~A--12)
+gives
+$$\eqalignno{
+H_y(x,y,z,\omega)\;&=\;{1\over4\pi}\,\int_0^{\infty}
+\Big(\pm e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+\lambda\,J_0(\lambda r)\;d\lambda\cr
+&\qquad\qquad-\;{1\over4\pi}\,{\partial\over\partial x}\,{x\over r}\,\int_0^{\infty}
+\Big(\pm e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+J_1(\lambda r)\;d\lambda&{\hbox{(A--23)}}\cr
+}$$
+(cf.~eq.~4.150 of Ward~\& Hohmann).
+The second integral in the above expression only contributes at the ends of the dipole.
+So the only part of $H_y$ required to compute the field due to the closed loop is
+$$\eqalignno{
+H_y(x,y,z,\omega)\;&=\;{1\over4\pi}\,\int_0^{\infty}
+\Big(\pm e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+\lambda\,J_0(\lambda r)\;d\lambda.&{\hbox{(A--24)}}\cr
+}$$
+
+\bigskip\noindent
+Finally, applying eq.~(A--14) to eq.~(A--9) gives the $z$-component of the H-field:
+$$\eqalignno{
+H_z(x,y,z,\omega)\;&=\;{1\over4\pi}\,{y\over r}\,\int_0^{\infty}
+\,\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+\lambda\,J_1(\lambda r)\,d\lambda&\hbox{(A--25)}\cr
+}$$
+(cf.~eq.~4.152 of Ward~\& Hohmann).
+
+\bigskip\noindent
+Equations~(A--24) \& (A--25) are for the total H-field ($H_x=0$ from eq.~A--16) for an
+$x$-directed electric dipole excluding the effects at the end-points, that is, the
+wholespace field up in the air plus the field due to currents induced in the layered
+Earth.
+In eqs.~(A--24) \& (A--25), the first part of the kernel of the Hankel transform
+corresponds to the primary wholespace field:
+$$\eqalignno{
+H_y(x,y,z,\omega)\;&=\;{1\over4\pi}\,\int_0^{\infty}
+\pm\,e^{-\lambda|z+h|}\,
+\lambda\,J_0(\lambda r)\;d\lambda,&{\hbox{(A--26)}}\cr
+&=\;{1\over4\pi}\,{\partial\over\partial z}\,\int_0^{\infty}
+e^{-\lambda|z+h|}\,
+J_0(\lambda r)\;d\lambda,&{\hbox{(A--27)}}\cr
+}$$
+and
+$$\eqalignno{
+H_z(x,y,z,\omega)\;&=\;{1\over4\pi}\,{y\over r}\,\int_0^{\infty}
+e^{-\lambda|z+h|}\,
+\lambda\,J_1(\lambda r)\,d\lambda&\hbox{(A--28)}\cr
+&=\;-\,{1\over4\pi}\,{y\over r}\,{\partial\over\partial r}\,\int_0^{\infty}
+e^{-\lambda|z+h|}\,
+J_0(\lambda r)\,d\lambda.&\hbox{(A--29)}\cr
+}$$
+From Ward~\& Hohmann eq.~(4.53), the integral in the above two expressions can
+be done:
+$$
+\int_0^{\infty}e^{-\lambda|z+h|}\,J_0(\lambda r)\,d\lambda\;=\;
+{1\over\big(r^2+(z+h)^2\big)^{1/2}}.
+\eqno{\hbox{(A--30)}}
+$$
+So
+$$\eqalignno{
+H_y(x,y,z,\omega)\;&=\;{1\over4\pi}\,{\partial\over\partial z}\,
+{1\over\big(r^2+(z+h)^2\big)^{1/2}},&{\hbox{(A--31)}}\cr
+&=\;-\,{1\over4\pi}\,
+{z\over\big(r^2+(z+h)^2\big)^{3/2}}&{\hbox{(A--32)}}\cr
+}$$
+(cf.~eq.~2.42 of Ward \& Hohmann for $\sigma=0$),
+and
+$$\eqalignno{
+H_z(x,y,z,\omega)\;&=\;-\,{1\over4\pi}\,{y\over r}\,{\partial\over\partial r}\,
+{1\over\big(r^2+(z+h)^2\big)^{1/2}},&\hbox{(A--33)}\cr
+&=\;{1\over4\pi}\,{y\over r}\,
+{r\over\big(r^2+(z+h)^2\big)^{3/2}},&\hbox{(A--34)}\cr
+&=\;{1\over4\pi}\,
+{y\over\big(r^2+(z+h)^2\big)^{3/2}}&\hbox{(A--35)}\cr
+}$$
+(cf.~eq.~2.42 of Ward \& Hohmann for $\sigma=0$).
+
+%----
+
+\vfill
+\break
+
+%----
+
+
+\leftline{\bf Frequency- to time-domain transformation -- part I}
+\nobreak\medskip\noindent
+The solution for the H-field in the frequency domain for a delta-function source
+in time (and hence a flat, constant, real source term in the frequency domain) is,
+for example,
+$$\eqalignno{
+H_z(x,y,z,\omega)\;&=\;{1\over4\pi}\,{y\over r}\,\int_0^{\infty}
+\,\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)\,
+\lambda\,J_1(\lambda r)\,d\lambda.&\hbox{(A--25)}\cr
+}$$
+Doing the inverse Fourier transform of these kinds of expressions does not
+encounter any subtleties, I think, and gives an H-field as a function of time
+that, schematically, looks like:
+$$
+S(t)=\delta(t)\quad\hbox{\vbox to 0.9cm{\psfig{figure=spike.ps,width=1.5cm}}}
+\qquad\rightarrow\qquad
+G^h(t)\quad\hbox{\vbox{\psfig{figure=hvst.eps,width=2.0cm}}}
+$$
+This is the basic ``response'' that program EM1DTM computes. Notation of $G^h(t)$ because
+this is the Green's function for convolution with the transmitter current waveform $S(t)$ to
+give the H-field:
+$$
+h(t)\;=\;\int_{t^{\prime}=-\infty}^{\infty}G^h(t-t^{\prime})\,S(t^{\prime})\>dt^{\prime}.
+\eqno{\hbox{(AA--1)}}
+$$
+The H-field for the delta-function source, that is, $G^h$ certainly exists for $t>0$.
+Also, it is certainly zero for $t<0$.
+And at $t=0$, it certainly is not infinite (not physical).
+Let's re-describe the function $G^h$ (shown in the diagram above) as
+$$
+G^h(t)\;=\;X(t)\,\tilde{G}^h(t),
+\eqno{\hbox{(AA--2)}}
+$$
+where $\tilde{G}^h(t)$ is equal to $G^h$ for $t>0$,
+$\tilde{G}^h(0)=\lim_{t\rightarrow 0+}G^h$, and does anything it wants
+for $t<0$.
+And $X(t)$ is the Heaviside function.
+This moves all issues about what is happening at $t=0$ into the Heaviside function.
+(I~think Christophe does this, or something like it.)
+
+\bigskip
+For measurements of voltage, the Green's function (``impulse response'') that is required
+is the time derivative of $G^h$ (and for all~$t$, not just $t>0$).
+Schematically:
+$$
+S(t)=\delta(t)\quad\hbox{\vbox to 0.9cm{\psfig{figure=spike.ps,width=1.5cm}}}
+\qquad\rightarrow\qquad
+G^V(t)\quad\hbox{\vbox to 0.8cm{\psfig{figure=vvst.eps,width=1.7cm}}}
+$$
+In terms of math:
+$$
+V(t)\;=\;\int_{t^{\prime}=-\infty}^{\infty}G^V(t-t^{\prime})\,S(t^{\prime})\>dt^{\prime}.
+\eqno{\hbox{(AA--3)}}
+$$
+Let's take the time derivative of eq.~(AA-2) to get the full expression for $G^V$:
+$$\eqalignno{
+G^V(t)\;&=\;{dG^h\over dt},&\cr
+&=\;{d\over dt}\big(X\,\tilde{G}^h\big),&\cr
+&=\;X\,{d\tilde{G}^h\over dt}\;+\;\delta\,\tilde{G}^h,&\hbox{(AA--4)}\cr
+}$$
+where $\delta$ is the delta function.
+Now, this is not a time derivative that should be happening numerically. So, given
+the basic $G^h(t)$ and some representation of the transmitter current waveform $S(t)$,
+program EM1DTM currently uses the re-arrangement of eq.~(AA--3) given by the substitution
+of eq.~(AA-4) into eq.~(AA-3) followed by some integration by parts:
+$$\eqalignno{
+V(t)\;&=\;\int_{t^{\prime}=-\infty}^{\infty}
+\Big\{X(t-t^{\prime})\,{d\tilde{G}^h\over dt^{\prime}}(t-t^{\prime})\;+\;
+\delta(t-t^{\prime})\,\tilde{G}^h(t-t^{\prime})\Big\}
+\,S(t^{\prime})\>dt^{\prime},&\cr
+&=\;\tilde{G}^h(0)\,S(t)\;+\;
+\int_{t^{\prime}=-\infty}^t{d\tilde{G}^h\over dt^{\prime}}(t-t^{\prime})\,S(t^{\prime})\>dt^{\prime},
+&{\hbox{(AA--5)}}\cr
+}$$
+where the Heaviside function has been used to restrict the limits of the integration.
+Now doing the integration by parts:
+$$\eqalignno{
+V(t)\;&=\;\tilde{G}^h(0)\,S(t)\;+\;
+\Big[\tilde{G}^h(t-t^{\prime})\,S(t^{\prime})\Big]_{t^{\prime}=-\infty}^t\;-\;
+\int_{t^{\prime}=-\infty}^t\tilde{G}^h(t-t^{\prime})\,{dS\over dt^{\prime}}(t^{\prime})\>dt^{\prime},&\cr
+&=\;\tilde{G}^h(0)\,S(t)\;+\;
+\tilde{G}^h(0)\,S(t)\;-\;
+\int_{t^{\prime}=-\infty}^t\tilde{G}^h(t-t^{\prime})\,{dS\over dt^{\prime}}(t^{\prime})\>dt^{\prime}.
+&{\hbox{(AA--6)}}\cr
+}$$
+Which looks as though it has the ``expected'' additional non-convolution-integral term.
+
+\bigskip
+However, perhaps there should be an additional minus sign in going from eq.~(AA--4) to
+the one before eq.~(AA-5) because the derivative has changed from $d/dt$ to $d/dt^{\prime}$.
+But perhaps not.
+
+\vfill
+\break
+
+\bigskip\bigskip\bigskip
+\leftline{\bf Frequency- to time-domain transformation}
+\nobreak\medskip\noindent
+The Fourier transform that was applied to Maxwell's equations to get the
+frequency-domain equations was (see Ward \& Hohmann, eq.~1.1)
+$$
+F(\omega)\;=\;\int_{-\infty}^{\infty}f(t)\>e^{-i\omega t}dt,
+$$
+and the corresponding inverse transform is
+$$
+f(t)\;=\;{1\over2\pi}\int_{-\infty}^{\infty}F(\omega)\>e^{i\omega t}d\omega.
+$$
+For the frequency domain computations, it is assumed that the source term
+is the same for all frequencies.
+In other words, a flat spectrum, which corresponds to a delta-function
+time-dependence of the source.
+
+\bigskip\noindent
+Consider at the moment a causal signal, that is, one for which $f(t)=0$ for $t<0$.
+The Fourier transform of this signal is then
+$$\eqalign{
+F(\omega)\;&=\;\int_0^{\infty}f(t)\>e^{-i\omega t}dt,\cr
+&=\;\int_0^{\infty}f(t)\>\cos\,\omega t\>dt\;-\;i\,\int_0^{\infty}f(t)\>\sin\,\omega t\>dt.\cr
+}$$
+Note that because of the dependence of the real part of $F(\omega)$ on $\cos\,\omega t$ and of
+the imaginary part on $\sin\,\omega t$, the real part of $F(\omega)$ is even and the imaginary
+part of $F(\omega)$ is odd.
+Hence, $f(t)$ can be obtained from either the real or imaginary part of its
+Fourier transform via the inverse cosine or sine transform:
+$$\eqalign{
+f(t)\;&=\;{2\over\pi}\int_0^{\infty} {\rm Re}\,F(\omega)\>\cos\,\omega t\>d\omega,\quad{\rm or}\cr
+f(t)\;&=\;-\,{2\over\pi}\int_0^{\infty} {\rm Im}\,F(\omega)\>\sin\,\omega t\>d\omega.\cr
+}$$
+(For factor of $\,2/\pi\,$ see, for example, Arfken.)
+
+\bigskip\noindent
+Now consider that we've computed the H-field in the frequency domain for a
+uniform source spectrum.
+Then from the above expressions, the time-domain H-field for a {\it positive delta-function}
+source time-dependence is
+$$\eqalign{
+h_{\delta+}(t)\;&=\;{2\over\pi}\int_0^{\infty} {\rm Re}\,H(\omega)\>\cos\,\omega t\>d\omega,\quad{\rm or}\cr
+h_{\delta+}(t)\;&=\;-\,{2\over\pi}\int_0^{\infty} {\rm Im}\,H(\omega)\>\sin\,\omega t\>d\omega,\cr
+}$$
+where $H(\omega)$ is the frequency-domain H-field for the uniform source spectrum.
+For a {\it negative delta-function} source:
+$$\eqalign{
+h_{\delta-}(t)\;&=\;
+-\,{2\over\pi}\int_0^{\infty} {\rm Re}\,H(\omega)\>\cos\,\omega t\>d\omega,\quad{\rm or}\cr
+h_{\delta-}(t)\;&=\;{2\over\pi}\int_0^{\infty} {\rm Im}\,H(\omega)\>\sin\,\omega t\>d\omega.\cr
+}$$
+The negative delta-function source dependence is the derivative with respect to time of
+a step turn-off source dependence.
+Hence, the {\it derivative} of the time-domain H-field due to a {\it step turn-off} is also
+given by the above expressions:
+$$\eqalign{
+{\partial h_{\rm s}\over\partial t}(t)\;&=\;
+-\,{2\over\pi}\int_0^{\infty} {\rm Re}\,H(\omega)\>\cos\,\omega t\>d\omega,\quad{\rm or}\cr
+{\partial h_{\rm s}\over\partial t}(t)\;&=\;
+{2\over\pi}\int_0^{\infty} {\rm Im}\,H(\omega)\>\sin\,\omega t\>d\omega.\cr
+}$$
+Integrating the above two expressions gives the H-field for a {\it step turn-off} source:
+$$\eqalign{
+h_{\rm s}(t)\;&=\;h(0)\>
+-\>{2\over\pi}\int_0^{\infty} {\rm Re}\,H(\omega)\>{1\over\omega}\,\sin\,\omega t\>d\omega,\quad{\rm or}\cr
+h_{\rm s}(t)\;&=\;
+-\,{2\over\pi}\int_0^{\infty} {\rm Im}\,H(\omega)\>{1\over\omega}\,\cos\,\omega t\>d\omega.\cr
+}$$
+(See also Newman, Hohmann \& Anderson, and Kaufman \& Keller for all this.)
+
+\bigskip\noindent
+Thinking in terms of the time-domain inhomogeneous differential equation:
+$$\eqalign{
+L\,h_{\delta-}\;&=\;\delta_-,\cr
+\Rightarrow\quad L\,h_{\delta-}\;&=\;{\partial\over\partial t}H_{\rm o},\cr
+\Rightarrow\quad L\,{\partial h_s\over\partial t}\;&=\;{\partial\over\partial t}H_{\rm o}.\cr
+}$$
+
+\bigskip
+$$
+\matrix{
+\hbox{\vbox{\psfig{figure=spike.ps,width=1.5cm}}}&\&&h(t)&\qquad&
+\hbox{\vbox{\psfig{figure=box.ps,width=1.5cm}}}&\&&h(t)&\qquad&
+\hbox{Fake/equivalent world}\cr
+\cr
+&\Updownarrow&&\qquad&&
+\Updownarrow\cr
+\cr
+\hbox{\vbox{\psfig{figure=step.ps,width=1.5cm}}}&\&&{dh\over dt}(t)&\qquad&
+\hbox{\vbox{\psfig{figure=ramp.ps,width=1.5cm}}}&\&&{dh\over dt}(t)&\qquad&
+\hbox{Real world}\cr
+}
+$$
+
+\medskip\noindent
+Top left is what we know (flat frequency spectrum for the source \& sine transform
+of the imaginary part of the field), and bottom left is what we're after.
+Also, top right is obtained from top left by convolution with the box-car, and
+bottom right is what we're considering it to be.
+Note that there should really be some minus signs in the above diagram.
+
+$$
+\matrix{
+\hbox{\vbox{\psfig{figure=spike.ps,width=1.5cm}}}&\&&\int^th(t^{\prime})\,dt^{\prime}&\quad&
+\hbox{\vbox{\psfig{figure=box.ps,width=1.5cm}}}&\&&\int^th(t^{\prime})\,dt^{\prime}&\quad&
+\hbox{Fake/equivalent world}\cr
+\cr
+&\Updownarrow&&\quad&&
+\Updownarrow\cr
+\cr
+\hbox{\vbox{\psfig{figure=step.ps,width=1.5cm}}}&\&&h(t)&\quad&
+\hbox{\vbox{\psfig{figure=ramp.ps,width=1.5cm}}}&\&&h(t)&\quad&
+\hbox{Real world}\cr
+}
+$$
+
+\medskip\noindent
+Again, top left is what we have (flat frequency spectrum for the source and cosine
+transform of the imaginary part divided by frequency), and bottom left is what we're
+thinking it is.
+And top right is the convolution with a box-car, and bottom right is what we're
+considering it to be: the H-field for a ramp turn-off.
+
+\bigskip
+$$
+\matrix{
+\hbox{\vbox{\psfig{figure=spike.ps,width=1.5cm,angle=180.}}}&\&&h(t)&\qquad&
+\hbox{\vbox{\psfig{figure=halfcosine.ps,width=1.5cm}}}&\&&h(t)&\qquad&
+\hbox{Fake/equivalent world}\cr
+\cr
+&\Updownarrow&&\qquad&&
+\Updownarrow\cr
+\cr
+\hbox{\vbox{\psfig{figure=step.ps,width=1.5cm}}}&\&&{dh\over dt}(t)&\qquad&
+\hbox{\vbox{\psfig{figure=halfsine.ps,width=1.5cm}}}&\&&{dh\over dt}(t)&\qquad&
+\hbox{Real world}\cr
+}
+$$
+
+\medskip\noindent
+Top left is what we have, and bottom is what we're thinking it is.
+And top right is the convolution with a discretized half-sine, and bottom right
+is what we're considering it to be: the time-derivative of the H-field for a
+half-sine waveform.
+
+$$
+\matrix{
+\hbox{\vbox{\psfig{figure=spike.ps,width=1.5cm,angle=180.}}}&\&&\int^th(t^{\prime})\,dt^{\prime}&\quad&
+\hbox{\vbox{\psfig{figure=halfcosine.ps,width=1.5cm}}}&\&&\int^th(t^{\prime})\,dt^{\prime}&\quad&
+\hbox{Fake/equivalent world}\cr
+\cr
+&\Updownarrow&&\quad&&
+\Updownarrow\cr
+\cr
+\hbox{\vbox{\psfig{figure=step.ps,width=1.5cm}}}&\&&h(t)&\quad&
+\hbox{\vbox{\psfig{figure=halfsine.ps,width=1.5cm}}}&\&&h(t)&\quad&
+\hbox{Real world}\cr
+}
+$$
+
+\medskip\noindent
+Top left is what we have, and bottom is what we're thinking it is.
+And top right is the convolution with a discretized half-sine, and bottom right
+is what we're considering it to be: the H-field for a half-sine waveform.
+
+%----
+
+\bigskip\bigskip\bigskip
+\leftline{\bf Integration of cubic splined function}
+\nobreak\medskip\noindent
+The time-domain voltage or magnetic field ends up being known at a number of
+discrete, logarithmically/ exponentially-spaced times as a result of Anderson's
+cosine/sine digital transform.
+This time-domain function is cubic splined in terms of the logarithms of the
+times.
+Hence, between any two discrete times, the time-domain function is approximated
+by the cubic spline
+$$
+y(h)\;=\;y_0\>+\>q_1\,h\>+\>q_2\,h^2+\>q_3\,h^3,
+$$
+(see routines {\tt RSPLN} \& {\tt RSPLE}) where $h=\log x-\log t_i$, $x$ is the time
+at which the function $y$ is required, $t_i$ is the $i$th time at which $y$
+is known ($t_i\le x\le t_{i+1}$), $y_0=y(\log t_i)$, and $q_1$, $q_2$ \& $q_3$
+are the spline coefficients.
+The required integral is
+$$\eqalign{
+\int_{x=a}^b y(\log x)\>dx\;&=\;\int_{\log x=\log a}^{\log b}y(\log x)\,x\,d(\log x),\cr
+&=\;\int_{\log x=\log a}^{\log b}y(\log x)\,e^{\log x}\,d(\log x),\cr
+&=\;\int_{h=\log a-\log t_i}^{\log b-\log t_i}y(h)\,e^{(h+\log t_i)}\,dh,\cr
+&=\;t_i\,\int_{h=\log a-\log t_i}^{\log b-\log t_i}y(h)\,e^h\,dh.\cr
+}$$
+Substituting the polynomial expression for $y(h)$ into the above integral
+and worrying about each term individually gives:
+$$
+\int y_0\,e^h\>dh\;=\;y_0\,e^h,
+$$
+$$
+\int q_1 h\,e^h\>dh\;=\;q_1 e^h(h-1)
+$$
+(G \& R 2.322.1),
+$$
+\int q_2 h^2 e^h\>dh\;=\;q_2 e^h(h^2-2h+2)
+$$
+(G \& R 2.322.2), and
+$$
+\int q_3 h^3 e^h\>dh\;=\;q_3 e^h(h^3-3h^2+6h-6)
+$$
+(G \& R 2.322.3).
+Hence, summing the integrals above,
+$$\eqalign{
+\int_{x=a}^b y(\log x)\>dx\;=&\;t_i\,y_0\Big({b\over t_i}\,-\,{a\over t_i}\Big)\cr
+&+\;t_i\,q_1\Big({b\over t_i}(\log b-\log t_i-1)\>-\>{a\over t_i}(\log a-\log t_i-1)\Big)\cr
+&+\;t_i\,q_2\Big({b\over t_i}\big((\log b-\log t_i)^2-2(\log b-\log t_i)+2\big)\>-\cr
+&\quad\qquad\qquad{a\over t_i}\big((\log a-\log t_i)^2-2(\log a-\log t_i)+2\big)\Big)\cr
+&+\;t_i\,q_3\Big({b\over t_i}\big((\log b-\log t_i)^3-3(\log b-\log t_i)^2+6(\log b-\log t_i)-6\big)\>-\cr
+&\quad\qquad\qquad{a\over t_i}\big((\log a-\log t_i)^3-3(\log a-\log t_i)^2+6(\log a-\log t_i)-6\big)\Big).\cr
+}$$
+
+\bigskip\bigskip\noindent
+The original plan was to treat a discretised transmitter current waveform as a piecewise
+linear function ({\it i.e.}, straight line segments between the provided sampled points), which
+meant that the response coming out of Anderson's filtering routine was convolved with the piecewise
+constant time-derivative of the transmitter current waveform to give voltages.
+This proved to be not good enough for on-time calculations (the step-y nature of the approximation
+of the time derivative of the transmitter current waveform could be seen in the computed
+voltages).
+So it was decided to cubic spline the transmitter current waveform, which gives a piecewise quadratic
+approximation to the time derivative of the waveform.
+And so the convolution of the stuff coming out of Anderson's routine is now with a constant,
+a linear time term and a quadratic term.
+The involved integral above is still required, along with:
+$$\eqalign{
+\int_{x=a}^b x\,y(\log x)\>dx\;&=\;\int_{\log x=\log a}^{\log b}y(\log x)\,x^2\,d(\log x),\cr
+&=\;\int_{\log x=\log a}^{\log b}y(\log x)\,e^{2\log x}\,d(\log x),\cr
+&=\;\int_{h=\log a-\log t_i}^{\log b-\log t_i}y(h)\,e^{(2h+2\log t_i)}\,dh,\cr
+&=\;t_i^2\,\int_{h=\log a-\log t_i}^{\log b-\log t_i}y(h)\,e^{2h}\,dh.\cr
+}$$
+Using the integrals above for the various powers of $h$ times $e^h$, the relevant integrals
+for the various parts of the cubic spline representation of $y(h)$ are:
+$$
+\int y_0\,e^{2h}\>dh\;=\;y_0\,{1\over2}\,e^{2h},
+$$
+$$
+\int q_1 h\,e^{2h}\>dh\;=\;q_1 {1\over4} e^{2h}(2h-1),
+$$
+$$
+\int q_2 h^2 e^{2h}\>dh\;=\;q_2 {1\over8} e^{2h}(4h^2-4h+2),
+$$
+$$
+\int q_3 h^3 e^{2h}\>dh\;=\;q_3 {1\over16} e^{2h}(8h^3-12h^2+12h-6).
+$$
+The limits for the integral are $h=\log a - \log t_i$ and $h=\log b - \log t_i$.
+The term $e^{2h}$ becomes:
+$$\eqalign{
+e^{2(\log X-\log t_i)}\;&=\;\big\{e^{(\log X-\log t_i)}\big\}^2,\cr
+&=\;\bigg\{{e^{\log X}\over e^{\log t_i}}\bigg\}^2,\cr
+&=\;\bigg({X\over t_i}\bigg)^2,\cr
+&=\;{X^2\over t_i^2},\cr
+}$$
+where $X$ is either $a$ or $b$.
+Hence,
+$$\eqalign{
+\int_{x=a}^b x\,y(\log x)\>dx\;=&\;t_i^2\,y_0\Big({b^2\over t_i^2}\,-\,{a^2\over t_i^2}\Big)\cr
+&+\;t_i^2\,q_1\,{1\over 4}\Big({b^2\over t_i^2}(2\log b-2\log t_i-1)\>-\>{a^2\over t_i^2}(2\log a-2\log t_i-1)\Big)\cr
+&+\;t_i^2\,q_2\,{1\over 8}\Big({b^2\over t_i^2}\big(4(\log b-\log t_i)^2-4(\log b-\log t_i)+2\big)\>-\cr
+&\qquad\qquad\qquad{a^2\over t_i^2}\big(4(\log a-\log t_i)^2-4(\log a-\log t_i)+2\big)\Big)\cr
+&+\;t_i^2\,q_3\,{1\over 16}\Big({b^2\over t_i^2}\big(8(\log b-\log t_i)^3-12(\log b-\log t_i)^2+12(\log b-\log t_i)-6\big)\>-\cr
+&\qquad\qquad\qquad{a^2\over t_i^2}\big(8(\log a-\log t_i)^3-12(\log a-\log t_i)^2+12(\log a-\log t_i)-6\big)\Big).\cr
+}$$
+And
+$$\eqalign{
+\int_{x=a}^b x^2\,y(\log x)\>dx\;&=\;\int_{\log x=\log a}^{\log b}y(\log x)\,x^3\,d(\log x),\cr
+&=\;\int_{\log x=\log a}^{\log b}y(\log x)\,e^{3\log x}\,d(\log x),\cr
+&=\;\int_{h=\log a-\log t_i}^{\log b-\log t_i}y(h)\,e^{(3h+3\log t_i)}\,dh,\cr
+&=\;t_i^3\,\int_{h=\log a-\log t_i}^{\log b-\log t_i}y(h)\,e^{3h}\,dh.\cr
+}$$
+And
+$$
+\int y_0\,e^{3h}\>dh\;=\;y_0\,{1\over3}\,e^{3h},
+$$
+$$
+\int q_1 h\,e^{3h}\>dh\;=\;q_1 {1\over9} e^{3h}(3h-1),
+$$
+$$
+\int q_2 h^2 e^{3h}\>dh\;=\;q_2 {1\over27} e^{3h}(9h^2-6h+2),
+$$
+$$
+\int q_3 h^3 e^{3h}\>dh\;=\;q_3 {1\over81} e^{3h}(27h^3-27h^2+18h-6).
+$$
+Hence,
+$$\eqalign{
+\int_{x=a}^b x^2\,y(\log x)\>dx\;=&\;t_i^3\,y_0\Big({b^3\over t_i^3}\,-\,{a^3\over t_i^3}\Big)\cr
+&+\;t_i^3\,q_1\,{1\over 9}\Big({b^3\over t_i^3}(3\log b-3\log t_i-1)\>-\>{a^3\over t_i^3}(3\log a-3\log t_i-1)\Big)\cr
+&+\;t_i^3\,q_2\,{1\over 27}\Big({b^3\over t_i^3}\big(9(\log b-\log t_i)^2-6(\log b-\log t_i)+2\big)\>-\cr
+&\qquad\qquad\qquad{a^3\over t_i^3}\big(9(\log a-\log t_i)^2-6(\log a-\log t_i)+2\big)\Big)\cr
+&+\;t_i^3\,q_3\,{1\over 81}\Big({b^3\over t_i^3}\big(27(\log b-\log t_i)^3-27(\log b-\log t_i)^2+18(\log b-\log t_i)-6\big)\>-\cr
+&\qquad\qquad\qquad{a^3\over t_i^3}\big(27(\log a-\log t_i)^3-27(\log a-\log t_i)^2+18(\log a-\log t_i)-6\big)\Big).\cr
+}$$
+
+\bigskip\bigskip\noindent
+In the previous two integrals of the product of $x$ \& $x^2$ with the function splined
+in terms of $\log x$, the $x$ \& $x^2$ should really be $(B-x)$ \& $(B-x)^2$, where $B$ is
+the end of the relevant interval of the splined transmitter current waveform (because it's
+convolution that's happening):
+$$\eqalign{
+&I_1\;=\;\int_{x=a}^b\big(B-x\big)\>y(\log x)\>dx,\quad\hbox{and}\cr
+&I_2\;=\;\int_{x=a}^b\big(B-x\big)^2\,y(\log x)\>dx.
+}$$
+Also, it was not really $x$ \& $x^2$ in those integrals because these terms are coming from
+the cubic splining of the transmitter current waveform, which means that in each interval
+between discretization points, it should be $(x-A)$ \& $(x-A)^2$ that are involved, where
+$A$ is the start of the relevant interval for the transmitter current waveform.
+Because
+$$\eqalign{
+&\int_{x=a}^b\big(x-A\big)\>y(\log x)\>dx\;=\;
+-\,A\,\int_{x=a}^by(\log x)\>dx\;+\;\int_{x=a}^bx\,y(\log x)\>dx,\quad\hbox{and}\cr
+&\int_{x=a}^b\big(x-A\big)^2\>y(\log x)\>dx\;=\;
+A^2\,\int_{x=a}^by(\log x)\>dx\;-\;2A\,\int_{x=a}^bx\,y(\log x)\>dx\;+\;\int_{x=a}^bx^2\,y(\log x)\>dx,\cr
+}$$
+and
+$$\eqalign{
+&\int_{x=a}^b\big(B-x\big)\>y(\log x)\>dx\;=\;
+B\,\int_{x=a}^by(\log x)\>dx\;-\;\int_{x=a}^bx\,y(\log x)\>dx,\quad\hbox{and}\cr
+&\int_{x=a}^b\big(B-x\big)^2\>y(\log x)\>dx\;=\;
+B^2\,\int_{x=a}^by(\log x)\>dx\;-\;2B\,\int_{x=a}^bx\,y(\log x)\>dx\;+\;\int_{x=a}^bx^2\,y(\log x)\>dx,\cr
+}$$
+then
+$$\eqalign{
+&I_1\;=\;\big(B-A\big)\,\int_{x=a}^by(\log x)\>dx\;-\;\int_{x=a}^b\big(x-A\big)\>y(\log x)\>dx,
+\qquad\hbox{and}\cr
+&I_2\;=\;\big(B-A\big)^2\int_{x=a}^by(\log x)\>dx\;-\;
+2\big(B-A)\int_{x=a}^b\big(x-A\big)\>y(\log x)\>dx\;+\;
+\int_{x=a}^b\big(x-A\big)^2\,y(\log x)\>dx.\cr
+}$$
+
+
+
+\vfill
+\break
+
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\leftline{\bigbf A.~Mathematics for Forward-Modelling Computations}
+\nobreak\bigskip\noindent
+This appendix contains the full and explicit description of the mathematics for
+the forward-modelling computations. The $z$-component of the Schelkunoff
+${\bf F}$-potential (Ward~\& Hohmann, 1988, {\it in} ``Electromagnetic Methods in
+Applied Geophysics'', v1, pp131--311, SEG) is used for all computations. This single
+component of the vector potential is all that is needed for computing all components of
+the magnetic field above the Earth's surface for all orientations of a magnetic dipole
+source also above the surface for the quasi-static assumption (see top of page~225
+of Ward~\& Hohmann). The computations are carried out by propagating through the layered
+model the matrices formed by applying the conditions on the component of ${\bf F}$ at
+each interface between layers (see CGF's thesis and Farquharson~\& Oldenburg, 1996, GJI,
+v126, pp235--252; and Partha's thesis).
+
+\bigskip\noindent
+{\bf Assumptions}: $e^{i\omega t}$ time-dependence; quasi-static approximation
+throughout; $z$ positive downwards; air halfspace ($\sigma=0$, $\chi=0$) for
+$z<0$, piecewise constant model ($\sigma>0$, $\chi\ge0$) of $N$ layers for $z\ge0$,
+$N$th layer being the basement (i.e.~homogeneous) halfspace.
+
+\bigskip\noindent
+Consider the Schelkunoff ${\bf F}$-potential:
+$$
+{\bf F}(x,y,z,\omega)\;=\;F(x,y,z,\omega)\,\hat{\bf z}
+\eqno{\hbox{(A--1)}}
+$$
+where $\hat{\bf z}$ is the unit vector in the $z$-direction. In each layer layer of
+the model the conductivity and susceptibility are constant. In the $j{\rm th}$ layer
+of conductivity~$\sigma_j$ and susceptibility~$\mu_j=\mu_0(1+\chi_j)$ not containing a source,
+$F$ satisfies the homogeneous differential equation:
+$$
+\nabla^2F_j\;+\;\kappa_j^2F_j\;=\;0
+\eqno{\hbox{(A--2)}}
+$$
+where $\kappa_j^2=-i\omega\mu_j\sigma_j$ (Ward~\& Hohmann, eqs.~1.124 \& 4.6).
+Consider the 2D Fourier transform such that
+$$\eqalignno{
+\tilde{F}(k_x,k_y,z,\omega)\;=\;&\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+F(x,y,z,\omega)\,e^{-i(k_xx+k_yy)}\;dx\,dy\;,&{\hbox{(A--3)}}\cr
+F(x,y,z,\omega)\;=\;{1\over4\pi^2}&\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+\tilde{F}(k_x,k_y,z,\omega)\,e^{i(k_xx+k_yy)}\;dk_x\,dk_y\;&{\hbox{(A--4)}}\cr
+}$$
+(Ward~\& Hohmann eqs.~4.7 \& 4.8). Applying this Fourier transform to eq.~(A--2)
+gives
+$$
+{d^2\tilde{F}_j\over dz^2}\;-\;u_j^2\,\tilde{F}_j\;=\;0,
+\eqno{\hbox{(A--5)}}
+$$
+where $u_j^2=k_x^2+k_y^2-\kappa_j^2=k_x^2+k_y^2+i\omega\mu_j\sigma_j$.
+The solution to this equation is:
+$$
+\tilde{F}_j(k_x,k_y,z,\omega)\;=D_j(k_x,k_y,\omega)\,e^{-u_j(z-z_j)}\;+\;
+U_j(k_x,k_y,\omega)\,e^{u_j(z-z_j)},
+\eqno{\hbox{(A--6)}}
+$$
+where $D_j$ and $U_j$ correspond to the coefficients of the downward- and upward-decaying
+parts of the solution in this the $j{\rm th}$ layer (Ward~\& Hohmann, eq.~4.13;
+Partha's thesis). (Note that the real part of $u_j$ is positive.)
+
+\bigskip\noindent
+At the interface between layer~$j-1$ and layer~$j$, which is at a depth of~$z_j$,
+the conditions on $\tilde{F}$ are:
+$$\eqalignno{
+\tilde{F}_{j-1}\big|_{z=z_j}\;&=\;\tilde{F}_j\big|_{z=z_j}\,,&\hbox{(A--7)}\cr
+{1\over\mu_{j-1}}\,{d\tilde{F}_{j-1}\over dz}\,\bigg|_{z=z_j}\;&=\;
+{1\over\mu_j}\,{d\tilde{F}_j\over dz}\,\bigg|_{z=z_j}&\hbox{(A--8)}\cr
+}$$
+(Ward \& Hohmann eqs.~1.152 and 1.153). Applying the first of these conditions
+to the solution in layer~$j$ ($j\ge2$) given by eq.~(A--6) and the corresponding expression
+for the solution in layer~$j-1$ gives:
+$$
+D_{j-1}\,e^{-u_{j-1}(z_j-z_{j-1})}\;+\;U_{j-1}\,e^{u_{j-1}(z_j-z_{j-1})}\;=\;
+D_j\;+\;U_j.
+\eqno{\hbox{(A--9)}}
+$$
+Applying the condition given in eq.~(A--8) at $z=z_j$ gives:
+$$
+{1\over\mu_{j-1}}\;\Big\{
+-\,D_{j-1}\,u_{j-1}\,e^{-u_{j-1}(z_j-z_{j-1})}\;+\;U_{j-1}\,u_{j-1}\,e^{u_{j-1}(z_j-z_{j-1})}
+\Big\}\;=\;
+{1\over\mu_j}\;\Big\{
+-\,D_j\,u_j\;+\;U_j\,u_j
+\Big\}.
+\eqno{\hbox{(A--10)}}
+$$
+The last two equations can be combined and expressed in matrix notation:
+$$
+\pmatrix{e^{-u_{j-1}t_{j-1}}&e^{u_{j-1}t_{j-1}}\cr-{u_{j-1}\over\mu_{j-1}}e^{-u_{j-1}t_{j-1}}&
+{u_{j-1}\over\mu_{j-1}}e^{u_{j-1}t_{j-1}}\cr}
+\pmatrix{D_{j-1}\cr U_{j-1}\cr}\;=\;
+\pmatrix{1&1\cr-{u_j\over\mu_j}&{u_j\over\mu_j}\cr}
+\pmatrix{D_j\cr U_j\cr},
+\eqno{\hbox{(A--11)}}
+$$
+where $t_{j-1}=z_j-z_{j-1}$ is the thickness of layer~$j-1$. Rearranging gives:
+$$\eqalignno{
+\pmatrix{D_{j-1}\cr U_{j-1}\cr}\;&=\;
+\pmatrix{e^{-u_{j-1}t_{j-1}}&e^{u_{j-1}t_{j-1}}\cr-{u_{j-1}\over\mu_{j-1}}e^{-u_{j-1}t_{j-1}}&
+{u_{j-1}\over\mu_{j-1}}e^{u_{j-1}t_{j-1}}\cr}^{-1}
+\pmatrix{1&1\cr-{u_j\over\mu_j}&{u_j\over\mu_j}\cr}
+\pmatrix{D_j\cr U_j\cr}&\hbox{(A--12)}\cr
+&=\;{\mu_{j-1}\over2u_{j-1}}
+\pmatrix{{u_{j-1}\over\mu_{j-1}}e^{u_{j-1}t_{j-1}}&-e^{u_{j-1}t_{j-1}}\cr
+{u_{j-1}\over\mu_{j-1}}e^{-u_{j-1}t_{j-1}}&e^{-u_{j-1}t_{j-1}}\cr}
+\pmatrix{1&1\cr-{u_j\over\mu_j}&{u_j\over\mu_j}\cr}
+\pmatrix{D_j\cr U_j\cr}&\hbox{(A--13)}\cr
+&=\;{1\over2}\,e^{u_{j-1}t_{j-1}}
+\pmatrix{1&-{\mu_{j-1}\over u_{j-1}}\cr
+e^{-2u_{j-1}t_{j-1}}&{\mu_{j-1}\over u_{j-1}}e^{-2u_{j-1}t_{j-1}}\cr}
+\pmatrix{1&1\cr-{u_j\over\mu_j}&{u_j\over\mu_j}\cr}
+\pmatrix{D_j\cr U_j\cr}&\hbox{(A--14)}\cr
+&=\;e^{u_{j-1}t_{j-1}}
+\pmatrix{{1\over2}\left(1+{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)&
+{1\over2}\left(1-{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)\cr
+{1\over2}\left(1-{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)e^{-2u_{j-1}t_{j-1}}&
+{1\over2}\left(1+{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)e^{-2u_{j-1}t_{j-1}}\cr}
+\pmatrix{D_j\cr U_j\cr}&\hbox{(A--15)}\cr
+&=\;e^{u_{j-1}t_{j-1}}\;\underline{\bf M}_j\;
+\pmatrix{D_j\cr U_j\cr},&\hbox{(A--16)}\cr
+}$$
+where
+$$
+\underline{\bf M}_j\;=\;
+\pmatrix{{1\over2}\left(1+{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)&
+{1\over2}\left(1-{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)\cr
+{1\over2}\left(1-{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)e^{-2u_{j-1}t_{j-1}}&
+{1\over2}\left(1+{\mu_{j-1}u_j\over\mu_ju_{j-1}}\right)e^{-2u_{j-1}t_{j-1}}\cr},
+\eqno{\hbox{(A--17)}}
+$$
+for $j\ge2$. In layer~0 (the air halfspace), $\tilde{F}$ is given by
+$$
+\tilde{F}_0\;=D_0\,e^{-u_0z}\;+\;U_0\,e^{u_0z}
+\eqno{\hbox{(A--18)}}
+$$
+rather than by the expression given in eq.~(A--6). The conditions in eqs.~(A--7) and (A--8)
+at $z=z_1=0$ therefore give
+$$
+D_0\;+\;U_0\;=\;D_1\;+\;U_1
+\eqno{\hbox{(A--19)}}
+$$
+and
+$$
+{1\over\mu_0}\;\Big\{-\,D_0\,u_0\;+\;U_0\,u_0\Big\}\;=\;
+{1\over\mu_1}\;\Big\{-\,D_1\,u_1\;+\;U_1\,u_1\Big\}.
+\eqno{\hbox{(A--20)}}
+$$
+In matrix form, these last two equations become
+$$
+\pmatrix{1&1\cr-{u_0\over\mu_0}&{u_0\over\mu_0}\cr}
+\pmatrix{D_0\cr U_0\cr}\;=\;
+\pmatrix{1&1\cr-{u_1\over\mu_1}&{u_1\over\mu_1}\cr}
+\pmatrix{D_1\cr U_1\cr}
+\eqno{\hbox{(A--21)}}
+$$
+and hence
+$$\eqalignno{
+\pmatrix{D_0\cr U_0\cr}\;&=\;
+\pmatrix{1&1\cr-{u_0\over\mu_0}&{u_0\over\mu_0}\cr}^{-1}
+\pmatrix{1&1\cr-{u_1\over\mu_1}&{u_1\over\mu_1}\cr}
+\pmatrix{D_1\cr U_1\cr}
+&\hbox{(A--22)}\cr
+&=\;{\mu_0\over2u_0}
+\pmatrix{{u_0\over\mu_0}&-1\cr{u_0\over\mu_0}&1}
+\pmatrix{1&1\cr-{u_1\over\mu_1}&{u_1\over\mu_1}\cr}
+\pmatrix{D_1\cr U_1\cr}
+&\hbox{(A--23)}\cr
+&=\;{1\over2}
+\pmatrix{1&-{\mu_0\over u_0}\cr1&{\mu_0\over u_0}}
+\pmatrix{1&1\cr-{u_1\over\mu_1}&{u_1\over\mu_1}\cr}
+\pmatrix{D_1\cr U_1\cr}
+&\hbox{(A--24)}\cr
+&=\;
+\pmatrix{{1\over2}\left(1+{\mu_0 u_1\over u_0\mu_1}\right)&
+{1\over2}\left(1-{\mu_0 u_1\over u_0\mu_1}\right)\cr
+{1\over2}\left(1-{\mu_0 u_1\over u_0\mu_1}\right)&
+{1\over2}\left(1+{\mu_0 u_1\over u_0\mu_1}\right)\cr}
+\pmatrix{D_1\cr U_1\cr}
+&\hbox{(A--25)}\cr
+&=\;\underline{\bf M}_1\;\pmatrix{D_1\cr U_1\cr}
+&\hbox{(A--26)}\cr
+}$$
+where
+$$
+\underline{\bf M}_1\;=\;
+\pmatrix{{1\over2}\left(1+{\mu_0 u_1\over\mu_1u_0}\right)&
+{1\over2}\left(1-{\mu_0 u_1\over\mu_1u_0}\right)\cr
+{1\over2}\left(1-{\mu_0 u_1\over\mu_1u_0}\right)&
+{1\over2}\left(1+{\mu_0 u_1\over\mu_1u_0}\right)\cr}.
+\eqno{\hbox{(A--27)}}
+$$
+Equation~(A--16) (and A--26) therefore provides a means of relating the solution for
+$\tilde{F}$ in a layer to the solution in the adjacent layers. Assuming there
+are $N$ layers in the Earth model with layer~0 being the air halfspace, $z_1=0$ (the
+surface of the Earth), and layer~$N$ being the basement halfspace, $U_0$ and $D_0$
+can be related to $U_N$ and $D_N$ by application of eq.~(A--26) and successive
+applications of eq.~(A--16):
+$$
+\pmatrix{D_0\cr U_0\cr}\;=\;
+\underline{\bf M}_1\;\exp\!\bigg(\sum_{j=2}^Nu_{j-1}t_{j-1}\bigg)\;
+\prod_{j=2}^N\underline{\bf M}_j\;\pmatrix{D_N\cr U_N\cr}.
+\eqno{\hbox{(A--28)}}
+$$
+
+\bigskip\noindent
+It is now assumed that the source is located in the air halfspace above the Earth.
+The downward-decaying part of the solution for $\tilde{F}$ in layer~$0$ is therefore
+due to the source: $D_0=D_0^S$ where $D_0^S$ is a known quantity once the type
+of source has been specified. In the basement halfspace there is no upward-decaying
+part to the solution: $U_N=0$. Equation~(A--28) can therefore be rewritten as
+$$
+\pmatrix{D_0^S\cr U_0\cr}\;=\;E\;
+\underline{\bf P}\;\pmatrix{D_N\cr 0\cr},
+\eqno{\hbox{(A--29)}}
+$$
+where the matrix $\underline{\bf P}$ is given by
+$$
+\underline{\bf P}\;=\;
+\underline{\bf M}_1\;\prod_{j=2}^N\underline{\bf M}_j,
+\eqno{\hbox{(A--30)}}
+$$
+and the factor~$E$ by
+$$
+E\;=\;\exp\!\bigg(\sum_{j=2}^Nu_{j-1}t_{j-1}\bigg).
+\eqno{\hbox{(A--31)}}
+$$
+The first of the implied pair of equations in eq.~(A--29) gives
+$$
+D_N\;=\;{1\over E}{1\over P_{11}}\,D_0^S,
+\eqno{\hbox{(A--32)}}
+$$
+and the second gives
+$$
+U_0\;=\;E\,P_{21}\,D_N.
+\eqno{\hbox{(A--33)}}
+$$
+Substituting eq.~(A--32) into eq.~(A--33) gives
+$$\eqalignno{
+U_0\;&=\;E\,P_{21}\,{1\over E}{1\over P_{11}}\,D_0^S,&\hbox{(A--34)}\cr
+&=\;{P_{21}\over P_{11}}\,D_0^S.&\hbox{(A--35)}\cr
+}$$
+The solution for $\tilde{F}$ in the air halfspace ($z<0$) is now given by
+$$
+\tilde{F}_0\;=D_0^S\Big(e^{-u_0z}\;+\;{P_{21}\over P_{11}}e^{u_0z}\Big).
+\eqno{\hbox{(A--36)}}
+$$
+
+\bigskip\noindent
+For a unit vertical magnetic dipole source at a height~$h$ (i.e.~$z=-h$ for $h>0$) above
+the surface of the Earth, the downward-decaying part of the primary solution for~$\tilde{F}$
+(and the only downward-decaying part of the solution for~$\tilde{F}$ in the air
+halfspace) at the surface of the Earth ($z=0$) is given by
+$$
+D_0^S\;=\;{i\omega\mu_0\over2u_0}\,e^{-u_0h}
+\eqno{\hbox{(A--37)}}
+$$
+(Ward~\& Hohmann, eq.~4.40). Substituting this into eq.~(A--36) gives
+$$
+\tilde{F}_0\;={i\omega\mu_0\over2u_0}\Big(e^{-u_0(z+h)}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big).
+\eqno{\hbox{(A--38)}}
+$$
+Generalizing this expression for~$z$ above ($z<-h$) as well as below the source ($z>-h$):
+$$
+\tilde{F}_0\;={i\omega\mu_0\over2u_0}\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big).
+\eqno{\hbox{(A--39)}}
+$$
+
+\bigskip\noindent
+For a unit $x$-directed magnetic dipole source at $z=-h$, the downward-decaying part
+of~$\tilde{F}$ in the air halfspace evaluated at the surface of the Earth is
+$$
+D_0^S\;=\;-{i\omega\mu_0\over2}\,{ik_x\over k_x^2+k_y^2}\,e^{-u_0h}
+\eqno{\hbox{(A--40)}}
+$$
+(Ward~\& Hohmann, eq.~4.106). Substituting this into eq.~(A--36) gives
+$$
+\tilde{F}_0\;=-{i\omega\mu_0\over2}\,\,{ik_x\over k_x^2+k_y^2}
+\Big(e^{-u_0(z+h)}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big).
+\eqno{\hbox{(A--41)}}
+$$
+For $z<-h$ as well as $-h<z<0$:
+$$
+\tilde{F}_0\;=-{i\omega\mu_0\over2}\,\,{ik_x\over k_x^2+k_y^2}
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big).
+\eqno{\hbox{(A--42)}}
+$$
+
+\bigskip\noindent
+Applying the inverse Fourier transform given in eq.~(A--4) to eq.~(A--39)
+gives
+$$
+F_0(x,y,z,\omega)\;=\;{1\over4\pi^2}\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over2u_0}\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)
+\,e^{i(k_xx+k_yy)}\;dk_x\,dk_y
+\eqno{\hbox{(A--43)}}
+$$
+for a vertical magnetic dipole, and applying the inverse Fourier transform to
+eq.~(A--42) gives
+$$\eqalignno{
+F_0(x,y,z,\omega)\;&=\;-\,{1\over4\pi^2}\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over2}\,\,{ik_x\over k_x^2+k_y^2}
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)
+\,e^{i(k_xx+k_yy)}\;dk_x\,dk_y\quad&\hbox{(A--44)}\cr
+&=\;-\,{1\over8\pi^2}\,{\partial\over\partial x}
+\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+{i\omega\mu_0\over k_x^2+k_y^2}
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)
+\,e^{i(k_xx+k_yy)}\;dk_x\,dk_y&\hbox{(A--45)}\cr
+}$$
+for an $x$-directed magnetic dipole. The kernels in the Fourier integrals in eqs.~(A--43)
+and (A--45) are functions of $k_x^2+k_y^2$ only. Using the identity
+$$
+\int_{\infty}^{\infty}\int_{\infty}^{\infty}\tilde{F}(k_x^2+k_y^2)\,dk_x\,dk_y\;=\;
+2\pi\int_0^{\infty}\tilde{F}(\lambda)\,\lambda\,J_0(\lambda r)\,d\lambda,
+\eqno{\hbox{(A--46)}}
+$$
+(Ward~\& Hohmann, eq.2.10) where $\lambda^2=k_x^2+k_y^2$ and $r^2=x^2+y^2$, eq.~(A--43)
+can be rewritten as
+$$\eqalignno{
+F_0(x,y,z,\omega)\;&=\;{1\over2\pi}\int_0^{\infty}
+{i\omega\mu_0\over2u_0}\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)
+\,\lambda\,J_0(\lambda r)\,d\lambda&\hbox{(A--47)}\cr
+&=\;{i\omega\mu_0\over4\pi}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,J_0(\lambda r)\,d\lambda&\hbox{(A--48)}\cr
+}$$
+since $u_0=\lambda$, and eq.~(A--45) can be rewritten as
+$$\eqalignno{
+F_0(x,y,z,\omega)\;&=\;-\,{1\over4\pi}\,{\partial\over\partial x}\int_0^{\infty}
+{i\omega\mu_0\over\lambda^2}\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)
+\,\lambda\,J_0(\lambda r)\,d\lambda&\hbox{(A--49)}\cr
+&=\;-\,{i\omega\mu_0\over4\pi}\,{\partial\over\partial x}\int_0^{\infty}
+\Big(e^{-u_0|z+h|}\;+\;{P_{21}\over P_{11}}e^{u_0(z-h)}\Big)
+\,{1\over\lambda}\,J_0(\lambda r)\,d\lambda&\hbox{(A--50)}\cr
+&=\;{i\omega\mu_0\over4\pi}\,{x\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,J_1(\lambda r)\,d\lambda,&\hbox{(A--51)}\cr
+}$$
+since
+$$
+{\partial J_0(\lambda r)\over\partial x}\;=\;-\,\lambda{x\over r}\,J_1(\lambda r)
+\eqno{\hbox{(A--52)}}
+$$
+(Ward~\& Hohmann, eq.~4.44 (almost)), and $u_0=\lambda$.
+
+\bigskip\noindent
+The $H$-field in the air halfspace can be obtained from eqs.~(A--48) and (A--51) (well,
+really eq.~A--50) by using eq.~(1.130) of Ward~\& Hohmann:
+$$\eqalignno{
+H_x\;&=\;{1\over i\omega\mu_0}\,{\partial^2F_0\over\partial x\partial z},&\hbox{(A--53)}\cr
+H_y\;&=\;{1\over i\omega\mu_0}\,{\partial^2F_0\over\partial y\partial z},&\hbox{(A--54)}\cr
+H_z\;&=\;{1\over i\omega\mu_0}\,\Big({\partial^2\over\partial z^2}\,+\,\kappa_0^2\Big)
+\,F_0&\hbox{(A--55)}\cr
+&=\;{1\over i\omega\mu_0}\,{\partial^2F_0\over\partial z^2}.&\hbox{(A--56)}\cr
+}$$
+since $\kappa_0^2=0$.
+Applying eqs.~(A--53) to~(A--56) to eq.~(A--48) gives
+$$\eqalignno{
+H_x(x,y,z,\omega)\;&=\;{1\over4\pi}\,{x\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_1(\lambda r)\,d\lambda,&\hbox{(A--57)}\cr
+H_y(x,y,z,\omega)\;&=\;{1\over4\pi}\,{y\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_1(\lambda r)\,d\lambda,&\hbox{(A--58)}\cr
+H_z(x,y,z,\omega)\;&=\;{1\over4\pi}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_0(\lambda r)\,d\lambda,&\hbox{(A--59)}\cr
+}$$
+for a $z$-directed magnetic dipole source at $(0,0,-h)$ (cf.~eqs.~4.45~\& 4.46 of
+Ward~\& Hohmann).
+Applying eq.~(A--53) to eq.~(A--50) gives
+$$\eqalignno{
+H_x(x,y,z,\omega)\;&=\;-\,{1\over4\pi}\,{\partial^2\over\partial x^2}\int_0^{\infty}
+\Big(-e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,J_0(\lambda r)\,d\lambda&\hbox{(A--60)}\cr
+&=\;-\,{1\over4\pi}\,\Big({1\over r}-{2x^2\over r^3}\Big)\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda\,J_1(\lambda r)\,d\lambda&\cr
+&\qquad\qquad-\;{1\over4\pi}\,{x^2\over r^2}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_0(\lambda r)\,d\lambda,&\hbox{(A--61)}\cr
+}$$
+using eqs.~(4.114) to~(4.118) of Ward~\& Hohmann.
+Applying eq.~(A--54) to eq.~(A--50) gives
+$$\eqalignno{
+H_y(x,y,z,\omega)\;&=\;
+-\,{1\over4\pi}\,{\partial^2\over\partial x\partial y}\int_0^{\infty}
+\Big(-e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,J_0(\lambda r)\,d\lambda&\hbox{(A--62)}\cr
+&=\;{1\over2\pi}\,{xy\over r^3}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda\,J_1(\lambda r)\,d\lambda&\cr
+&\qquad\qquad-\;{1\over4\pi}\,{xy\over r^2}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_0(\lambda r)\,d\lambda,&\hbox{(A--63)}\cr
+}$$
+again using eqs.~(4.114) to~(4.118) of Ward~\& Hohmann. Finally, applying
+eq.~(A--56) to eq.~(A--51) gives
+$$
+H_z(x,y,z,\omega)\;=\;
+{1\over4\pi}\,{x\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_1(\lambda r)\,d\lambda
+\eqno{\hbox{(A--64)}}
+$$
+(cf.~eqs.~4.119 to 4.121 of Ward~\& Hohmann).
+
+\medskip
+$$\boxit{
+\vbox{\hsize 155mm \noindent
+To summarize, for a $z$-directed magnetic dipole source at $(0,0,-h)$, $h>0$,
+the three components of the $H$-field in the air halfspace (i.e.~$z<0$) are
+given by eqs.~(A--57) to~(A--59):
+$$\eqalign{
+H_x(x,y,z,\omega)\;&=\;{1\over4\pi}\,{x\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_1(\lambda r)\,d\lambda,\cr
+H_y(x,y,z,\omega)\;&=\;{1\over4\pi}\,{y\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_1(\lambda r)\,d\lambda,\cr
+H_z(x,y,z,\omega)\;&=\;{1\over4\pi}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_0(\lambda r)\,d\lambda.\cr
+}$$
+}}$$
+
+\smallskip
+$$\boxit{
+\vbox{\hsize 155mm \noindent
+And for an $x$-directed magnetic dipole source at $(0,0,-h)$, $h>0$,
+the three components of the $H$-field in the air halfspace (i.e.~$z<0$) are
+given by eqs.~(A--61), (A--63) and (A--64):
+$$\eqalign{
+H_x(x,y,z,\omega)\;&=\;-\,{1\over4\pi}\,\Big({1\over r}-{2x^2\over r^3}\Big)\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda\,J_1(\lambda r)\,d\lambda\cr
+&\qquad\qquad-\;{1\over4\pi}\,{x^2\over r^2}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_0(\lambda r)\,d\lambda,\cr
+H_y(x,y,z,\omega)\;&=\;{1\over2\pi}\,{xy\over r^3}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda\,J_1(\lambda r)\,d\lambda\cr
+&\qquad\qquad-\;{1\over4\pi}\,{xy\over r^2}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;-\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_0(\lambda r)\,d\lambda,\cr
+H_z(x,y,z,\omega)\;&=\;{1\over4\pi}\,{x\over r}\int_0^{\infty}
+\Big(e^{-\lambda|z+h|}\;+\;{P_{21}\over P_{11}}e^{\lambda(z-h)}\Big)
+\,\lambda^2\,J_1(\lambda r)\,d\lambda.\cr
+}$$
+}}$$
+
+\bigskip\noindent
+For a $y$-directed magnetic dipole source, just apply the rotation
+$(x,y,z)\rightarrow(y,-x,z)$ to the above equations for an $x$-directed dipole
+(i.e.~replace $x$ everywhere in the equations by $y$, and replace $y$
+everywhere by $-x$).
+
+\vfill\break
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\bye
