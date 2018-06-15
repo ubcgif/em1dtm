@@ -1,22 +1,29 @@
 .. _overview:
 
-EM1DFM package overview
+EM1DTM package overview
 =======================
 
 Description
 -----------
 
-EM1DFM is a Fortran-based, multi-platform program library for carrying out the one-dimensional inversion of frequency-domain, small loop, electromagnetic data acquired to determine the spatial variation of the electrical conductivity and/or magnetic susceptibility of the subsurface. The name "EM1DFM" derives from: electromagnetics ("EM"), one-dimensional models ("1D"), frequency-domain observations ("F"), and magnetic (dipole) sources and
-receivers ("M"). 
+EM1DTM is a Fortran-based, multi-platform program library for carrying out the
+one-dimensional inversion of time-domain, small loop, electromagnetic
+data acquired to determine the spatial variation of the electrical
+conductivity and/or magnetic susceptibility of the subsurface. The name
+"EM1DTM" derives from: electromagnetics ("EM"), one-dimensional models ("1D"),
+time-domain observations ("T"), and magnetic (dipole) sources and
+receivers ("M").
 
-The acquired data are measurements of the magnetic field due to electric currents and magnetization induced in the subsurface by a time-varying current in a transmitter loop. Information about how the conductivity and susceptibility vary with depth is obtained by making measurements for different frequencies of the transmitter current, and for different separations, heights and orientations of the transmitters and receivers. Different soundings provide information about the lateral variation in the subsurface. A sounding is a distinct collection of FEM measurements (transmitters, receivers and frequencies) which are used to recover a corresponding 1D layered Earth model. On the figure below, we see two examples. On the left, two soundings (e.g. two separate sets of measurements) are collected at the same location; in this case, the inversion should recover the same model. On the right, we see the use of separate soundings to map lateral variation.
-
-.. figure:: ../images/soundings_domain.png
-     :align: center
-     :width: 700
-
-     Two distinct groupings of transmitters and receivers (soundings) at the same location (left). Different soundings used to map lateral variation in the Earth (right). **Click to enlarge**.
-
+The acquired data are measurements of the magnetic field due to electric
+currents induced in the subsurface by a time-varying current in a transmitter
+loop. Information about how the conductivity vary with depth is obtained by
+making measurements for different times of the transmitter current, and for
+different separations, heights and orientations of the receivers. Different
+soundings provide information about the lateral variation in the subsurface. A
+sounding is a distinct collection of TEM measurements (transmitters, receivers
+and times) which are used to recover a corresponding 1D layered Earth model.
+On the figure below, we see the use of separate soundings to map lateral
+variation.
 
 .. figure:: ../images/domain.png
      :align: right
@@ -24,9 +31,17 @@ The acquired data are measurements of the magnetic field due to electric current
 
      Layered 1D model describing the Earth for each sounding.
 
-For any sounding location, the mathematical representation that EM1DFM uses to model the Earth varies only with depth. In particular, the representation comprises many uniform, horizontal layers, and it is the conductivity and/or susceptibility within each layer that is computed. Four options are available: just the conductivity in each layer can be constructed, or just the susceptibility (constrained to be positive) in each layer, or both the conductivity and susceptibility with the positivity constraint on the susceptibility, or both the conductivity and susceptibility without the positivity constraint. For a complete mathematical treatment of the forward and inversion problem, see :ref:`Background Theory<theory>`.
+For any sounding location, the mathematical representation that EM1DTM uses to
+model the Earth varies only with depth. In particular, the representation
+comprises many uniform "infinite" horizontal layers. For a complete mathematical
+treatment of the forward and inversion problem, see :ref:`Background
+Theory<theory>`.
 
-The initial research underlying this program library was funded principally by the “IMAGE” consortium, of which the following companies were participants: AGIP, Anglo American, Billiton, Cominco, Falconbridge, INCO, MIM, Muskox Minerals, Newmont, Placer Dome and Rio Tinto, and from the Natural Sciences and Engineering Research Council of Canada (NSERC).
+The initial research underlying this program library was funded principally by
+the “IMAGE” consortium, of which the following companies were participants:
+AGIP, Anglo American, Billiton, Cominco, Falconbridge, INCO, MIM, Muskox
+Minerals, Newmont, Placer Dome and Rio Tinto, and from the Natural Sciences
+and Engineering Research Council of Canada (NSERC).
 
 
 Program library content
@@ -34,9 +49,9 @@ Program library content
 
 This package consists of two programs:
 
-   - **EM1DFM:** carries out the inversion of small loop, frequency-domain EM data assuming a layered Earth model
+   - **EM1DTM:** carries out the inversion of small loop, time-domain EM data assuming a layered Earth model
 
-   - **EM1DFMFWD:** a stand-alone program for forward modeling the frequency-domain response assuming a layered Earth model
+   - **EM1DTMFWD:** a stand-alone program for forward modeling the time-domain response assuming a layered Earth model
 
 
 Licensing
