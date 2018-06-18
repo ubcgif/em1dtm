@@ -14,16 +14,19 @@ conductivity and/or magnetic susceptibility of the subsurface. The name
 time-domain observations ("T"), and magnetic (dipole) sources and
 receivers ("M").
 
-The acquired data are measurements of the magnetic field due to electric
-currents induced in the subsurface by a time-varying current in a transmitter
-loop. Information about how the conductivity vary with depth is obtained by
-making measurements for different times of the transmitter current, and for
-different separations, heights and orientations of the receivers. Different
-soundings provide information about the lateral variation in the subsurface. A
-sounding is a distinct collection of TEM measurements (transmitters, receivers
-and times) which are used to recover a corresponding 1D layered Earth model.
-On the figure below, we see the use of separate soundings to map lateral
-variation.
+The observations are values of voltage (i.e., dB/dt) or magnetic ﬁeld.
+Receiver coils can be oriented in the x-, y- or z-directions, and they can be
+at any position relative to the transmitter loop. The transmitter loop can
+have any number of sides (greater than 2), and can be at any height above the
+ground surface. It is assumed to be horizontal. The transmitter current
+waveform can be a step oﬀ, a linear ramp turn-oﬀ, or a general waveform that
+is provided in discretized form. Observations can be for any time after the
+step or ramp turn oﬀ, or any time after or during a discretized waveform. All
+the observations (in any combination) that are provided for a particular
+transmitter loop constitute a “sounding”, and are used to construct the one-
+dimensional model for that sounding. Measurement uncertainties can be in the
+same units as the observations or as relative uncertainties in percent.
+
 
 .. figure:: ../images/domain.png
      :align: right
@@ -31,11 +34,30 @@ variation.
 
      Layered 1D model describing the Earth for each sounding.
 
+The product: an electrical conductivity model. The Earth models are composed of
+layers of uniform conductivity with ﬁxed interface depths. The value of the
+conductivity in each layer is sought by the inversion. Multiple soundings can
+be handled in a single run of the program. Each sounding is inverted
+independently for a one-dimensional model under the sounding location, with
+the sequence of one-dimensional models written out. These can be viewed
+directly as a composite two-dimensional image using the graphical user
+interface, or converted to a format which is suitable for viewing as a three-
+dimensional image using MeshTools3D.
 For any sounding location, the mathematical representation that EM1DTM uses to
 model the Earth varies only with depth. In particular, the representation
 comprises many uniform "infinite" horizontal layers. For a complete mathematical
 treatment of the forward and inversion problem, see :ref:`Background
 Theory<theory>`.
+
+
+General measures for both the measure of data misﬁt and the measure of the amount of model structure:
+
+	- Huber M-measure for data misﬁt, and
+	- Ekblom p-measure for model structure, allow for a whole suite of variations, from the traditional sum-
+	  of-squares measures, to more robust measures which can ignore outliers in the observations and which
+	  can generate piecewise-constant models.
+
+
 
 The initial research underlying this program library was funded principally by
 the “IMAGE” consortium, of which the following companies were participants:
