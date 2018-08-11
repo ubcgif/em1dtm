@@ -86,22 +86,50 @@ magnitude of the free-space field.
 Forward Modeling
 ----------------
 
-The method used to compute the magnetic field values for a particular source-receiver arrangement over a
-layered Earth model is the matrix propagation approach described in Farquharson (:cite:`Farquharson2003`). The method
-uses the z-component of the Schelkunoff F-potential (:cite:`Ward1987`):
+The method used to compute the magnetic field values for a particular source-
+receiver arrangement over a layered Earth model is the matrix propagation
+approach described in Farquharson (:cite:`Farquharson2003`). The method uses
+the z-component of the Schelkunoff F-potential (:cite:`Ward1987`): layered
+Earth model is the matrix propagation approach described in Farquharson &
+Oldenburg (1996) and Farquharson, Oldenburg & Routh (2003). Computations are
+done in the frequency domain, then the ﬁelds transformed to the time domain.
 
-This appendix covers the aspects of the forward-modelling procedure for the
+This section covers the aspects of the forward-modelling procedure for the
 three components of the magnetic field above a horizontally-layered Earth
 model for a horizontal, many-sided transmitter loop also above the surface of
-the model that are not covered in Appendix~A of the notes for program EM1DFM.
-The field for the transmitter loop is computed by the superposition
-of the fields due to horizontal electric dipoles (see eqs.~4.134--4.152
+the model.
+The field for the transmitter loop is computed by the superposition of the
+fields due to horizontal electric dipoles (see eqs.~4.134--4.152
 :cite:`Ward1987`). Because the loop is closed, the contributions from the ends
 of the electric dipole are ignored, and the superposition is carried out only
 over the **TE**-mode component. This TE-mode only involves the *z*-component
-of the Schelkunoff :math:`\mathbf{F}`-potential, just as for program `EM1DFM <http://em1dfm.readthedocs.io/en/latest>`_. The
-propagation of *F* through the stack of layers therefore happens in exactly
-the same way, and so is not repeated here (`see EM1DFM Forward modeling section <http://em1dfm.readthedocs.io/en/latest/content/theory.html#forward-modeling>`_).
+of the Schelkunoff :math:`\mathbf{F}`-potential, just as for program `EM1DFM
+<http://em1dfm.readthedocs.io/en/latest>`_.
+
+The Schelkunoﬀ F-potential is deﬁned as follows:
+
+.. math::
+    \mathbf{E} = - \nabla \times \mathbf{F} \\
+    \mathbf{H} = - \sigma \mathbf{F} + \frac{1}{i \omega \mu }\nabla (\nabla \cdot \mathbf{F})
+
+where :math:`\mathbf{E}` and :math:`\mathbf{H}` are the electric and mangetic
+fields, :math:`\sigma` and :math:`\mu` are the conductivity and permability of
+the uniform region to which the above queation refer, and a time-dependence of :math:`e^{i\omega t}` has been assumed.
+
+In the :math:`j^{th}` layer (:math:`j > 0`), with conductivity :math:`σj` ,
+and permeability :math:`µ_j`, the z-component of the Schelkunoﬀ potential
+satisﬁes the equation (assuming the quasi-static approximation, and the
+permeability of the layer is equal to that of free space :math:`\mu_0`):
+
+.. math::
+    \nabla^2 F_j  - i \omega \mu_0 \sigma_j F_j = 0
+
+
+The propagation of *F* through the stack of layers therefore happens in
+exactly the same way, and so is not repeated here (`see EM1DFM Forward
+modeling section
+<http://em1dfm.readthedocs.io/en/latest/content/theory.html#forward-
+modeling>`_).
 
 .. note::
     **Assumptions**
@@ -1164,6 +1192,10 @@ gives:
 
 .. math::
     \frac{\partial M_d}{\partial \delta m_k} (\mathbf{x}) = \sum_{i=1}^N \rho^\prime_H (x_i) \frac{\partial x_i}{\partial \delta m_k}
+
+where :math:`x =W_d(\mathbf{d}^{n-1} + \mathbf{J}^{n-1} \delta \mathbf{m} - \mathbf{d}^{obs}`.
+The vector of the derivatives with respect to the perturbations of
+the model parameters in all the layers can be written in matrix notation as:
 
 
 The linear system of equations to be solved for :math:`\delta \mathbf{m} is therefore:
